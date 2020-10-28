@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ファイルアップロード</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+</head>
+<body>
+<h1>ファイルアップロード</h1>
+<p th:text="${message}"></p>
+<form th:action="@{/file/upload}" enctype="multipart/form-data" method="POST" th:object="${uploadForm}">
+    <input type="file" neme="uploadFile" th:field="*{uploadFile}">
+    <input type="submit">
+    <table>
+        <tr>
+            <th>No</th><th>名前</th>
+        </tr>
+        <tr th:each="storedFile : ${uploadForm.storedFiles}">
+            <td th:text="${storedFileStat.count}"></td>
+            <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"></a></td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
