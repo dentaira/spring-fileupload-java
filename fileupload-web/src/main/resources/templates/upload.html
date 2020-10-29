@@ -2,24 +2,36 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>ファイルアップロード</title>
-    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+    <title>Storage</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
 </head>
 <body>
-<h1>ファイルアップロード</h1>
-<p th:text="${message}"></p>
-<form th:action="@{/file/upload}" enctype="multipart/form-data" method="POST" th:object="${uploadForm}">
-    <input type="file" neme="uploadFile" th:field="*{uploadFile}">
-    <input type="submit">
-    <table>
-        <tr>
-            <th>No</th><th>名前</th>
-        </tr>
-        <tr th:each="storedFile : ${uploadForm.storedFiles}">
-            <td th:text="${storedFileStat.count}"></td>
-            <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"></a></td>
-        </tr>
-    </table>
-</form>
+<main role="main" class="container">
+    <form th:action="@{/file/upload}" enctype="multipart/form-data" method="POST" th:object="${uploadForm}">
+        <div class="jumbotron">
+            <h1>Storage</h1>
+            <p class="lead">あなたのファイルをアップロードしてオンラインストレージに保存しましょう！</p>
+            <input type="file" neme="uploadFile" th:field="*{uploadFile}">
+            <button class="btn btn-primary" role="button">アップロード</button>
+            <p class="message-complete" th:text="${message}"></p>
+        </div>
+        <table class="table table-hover">
+            <thead class="thead-light">
+            <tr>
+                <th scope="col">名前</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="storedFile : ${uploadForm.storedFiles}">
+                <td><a class="display-block" th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"></a></td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</main>
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
 </body>
 </html>
