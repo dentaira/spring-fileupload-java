@@ -10,14 +10,18 @@ public class StoredFile {
 
     private final InputStream content;
 
-    public StoredFile(int id, String name, InputStream content) {
+    private final long size;
+
+    public StoredFile(int id, String name, InputStream content, long size) {
         this.id = id;
         this.name = name;
         this.content = content;
+        this.size = size;
     }
 
-    public StoredFile(int id, String name) {
-        this(id, name, null);
+    public StoredFile(int id, String name, long size) {
+        // TODO ファイルのコンテンツそのものとメタデータはドメインオブジェクトとして分けるべきか？
+        this(id, name, null, size);
     }
 
     public int getId() {
@@ -30,5 +34,9 @@ public class StoredFile {
 
     public InputStream getContent() {
         return content;
+    }
+
+    public long getSize() {
+        return size;
     }
 }

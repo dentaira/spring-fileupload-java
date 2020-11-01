@@ -18,6 +18,7 @@ public class FileService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    // TODO Repositoryを作成する
     final JdbcTemplate jdbcTemplate;
 
     public FileService(JdbcTemplate jdbcTemplate) {
@@ -26,17 +27,21 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<StoredFile> search() {
-        return jdbcTemplate.query("SELECT id, name FROM FILE", (rs, rowNum) -> {
-            return new StoredFile(rs.getInt("id"), rs.getString("name"));
+        return jdbcTemplate.query("SELECT id, name, size FROM FILE", (rs, rowNum) -> {
+            return new StoredFile(rs.getInt("id")
+                    , rs.getString("name")
+                    , rs.getLong("size"));
         });
     }
 
     @Transactional(rollbackFor = Exception.class)
     public void register(MultipartFile multipartFile) {
+        // TODO MultipartFileに依存しないようにする
         try (InputStream in = multipartFile.getInputStream()) {
-            int result = jdbcTemplate.update("INSERT INTO FILE(name, content) VALUES(?, ?)", (ps) -> {
+            int result = jdbcTemplate.update("INSERT INTO FILE(name, content, size) VALUES(?, ?, ?)", (ps) -> {
                 ps.setString(1, multipartFile.getOriginalFilename());
                 ps.setBinaryStream(2, in);
+                ps.setLong(3, multipartFile.getSize());
             });
             logger.info(String.valueOf(result));
 
@@ -49,7 +54,10 @@ public class FileService {
     public StoredFile findById(int downloadId) {
         return (StoredFile) jdbcTemplate.query("SELECT id, name, content FROM FILE WHERE id = ?", (rs) -> {
             rs.next();
-            return new StoredFile(rs.getInt("id"), rs.getString("name"), rs.getBinaryStream("content"));
+            return new StoredFile(rs.getInt("id")
+                    , rs.getString("name")
+                    , rs.getBinaryStream("content")
+                    , rs.getLong("size"));
         }, downloadId);
     }
 

@@ -20,13 +20,15 @@
             <thead class="thead-light">
             <tr>
                 <th scope="col">名前</th>
+                <th scope="col">ファイルサイズ</th>
                 <th scope="col">削除</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="storedFile : ${uploadForm.storedFiles}">
-                <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"></a></td>
-                <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'" th:text="削除"></a></td>
+                <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"/></td>
+                <td><span th:text="${storedFile.size}"/>バイト</td>
+                <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
             </tr>
             </tbody>
         </table>
