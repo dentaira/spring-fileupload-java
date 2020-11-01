@@ -24,6 +24,7 @@ public class FileService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Transactional(readOnly = true)
     public List<StoredFile> search() {
         return jdbcTemplate.query("SELECT id, name FROM FILE", (rs, rowNum) -> {
             return new StoredFile(rs.getInt("id"), rs.getString("name"));
@@ -32,7 +33,6 @@ public class FileService {
 
     @Transactional(rollbackFor = Exception.class)
     public void register(MultipartFile multipartFile) {
-
         try (InputStream in = multipartFile.getInputStream()) {
             int result = jdbcTemplate.update("INSERT INTO FILE(name, content) VALUES(?, ?)", (ps) -> {
                 ps.setString(1, multipartFile.getOriginalFilename());
@@ -45,6 +45,7 @@ public class FileService {
         }
     }
 
+    @Transactional(readOnly = true)
     public StoredFile findById(int downloadId) {
         return (StoredFile) jdbcTemplate.query("SELECT id, name, content FROM FILE WHERE id = ?", (rs) -> {
             rs.next();
@@ -52,6 +53,7 @@ public class FileService {
         }, downloadId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void delete(int fileId) {
         jdbcTemplate.update("DELETE FROM FILE WHERE id = ?", fileId);
     }
