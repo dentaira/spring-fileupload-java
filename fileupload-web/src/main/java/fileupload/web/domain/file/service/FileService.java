@@ -51,5 +51,9 @@ public class FileService {
             return new StoredFile(rs.getInt("id"), rs.getString("name"), rs.getBinaryStream("content"));
         }, downloadId);
     }
+
+    public void delete(int fileId) {
+        jdbcTemplate.update("DELETE FROM FILE WHERE id = ?", fileId);
+    }
 }
 

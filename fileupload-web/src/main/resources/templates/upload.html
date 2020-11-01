@@ -20,18 +20,29 @@
             <thead class="thead-light">
             <tr>
                 <th scope="col">名前</th>
+                <th scope="col">削除</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="storedFile : ${uploadForm.storedFiles}">
-                <td><a class="display-block" th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"></a></td>
+                <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"></a></td>
+                <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'" th:text="削除"></a></td>
             </tr>
             </tbody>
         </table>
     </form>
+    <form name="deleteForm" th:action="@{/file/delete/}" method="POST" />
 </main>
 <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script>
+    function submitDeleteRequest(fileId) {
+        let form = document.deleteForm;
+        form.action = form.action + fileId
+        form.submit();
+        return false;
+    }
+</script>
 </body>
 </html>
