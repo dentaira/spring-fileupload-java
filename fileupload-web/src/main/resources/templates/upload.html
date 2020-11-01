@@ -27,7 +27,7 @@
             <tbody>
             <tr th:each="storedFile : ${uploadForm.storedFiles}">
                 <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"/></td>
-                <td><span th:text="${storedFile.size}"/>バイト</td>
+                <td><span th:text="${storedFile.displaySize()}"/></td>
                 <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
             </tr>
             </tbody>

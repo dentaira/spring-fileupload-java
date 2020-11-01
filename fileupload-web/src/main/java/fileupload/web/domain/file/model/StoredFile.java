@@ -39,4 +39,21 @@ public class StoredFile {
     public long getSize() {
         return size;
     }
+
+    public static final long ONE_KILOBYTE = 1024L;
+    public static final long ONE_MEGABYTE = ONE_KILOBYTE * ONE_KILOBYTE;
+    public static final long ONE_GIGABYTE = ONE_MEGABYTE * ONE_KILOBYTE;
+
+    public String displaySize() {
+        // TODO 少数桁まで出力したい
+        if (size < ONE_KILOBYTE) {
+            return size + "B";
+        } else if (ONE_KILOBYTE <= size && size < ONE_MEGABYTE) {
+            return size / ONE_KILOBYTE + "KB";
+        } else if (ONE_MEGABYTE <= size && size < ONE_GIGABYTE) {
+            return size / ONE_MEGABYTE + "MB";
+        } else {
+            return size / ONE_GIGABYTE + "GB";
+        }
+    }
 }
