@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width-device-width, initial-scale=1">
+    <title>Cobaco ファイル一覧</title>
+    <meta name="description" content="あなたのファイル一覧です。">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/webjars/normalize.css/normalize.css}">
+</head>
+<body>
+<header>
+    <div class="header-inner container">
+        <h1>Cobaco</h1>
+    </div>
+</header>
+<section>
+    <div class="container">
+        <aside class="sidebar">
+            <ul>
+                <li>
+                    <form name="uploadForm" th:action="@{/file/upload}" enctype="multipart/form-data" method="POST"
+                          th:object="${uploadForm}">
+                        <label for="uploadFile">
+                            ファイルをアップロード
+                        </label>
+                        <input type="file" id="uploadFile" onchange="submitUpload()" th:field="*{uploadFile}">
+                    </form>
+                </li>
+                <li>
+                    フォルダをアップロード
+                </li>
+                <li>
+                    フォルダを追加
+                </li>
+            </ul>
+        </aside>
+        <main class="main">
+            <div>
+                <table class="file-table">
+                    <thead>
+                    <tr>
+                        <th scope="col">名前</th>
+                        <th scope="col">ファイルサイズ</th>
+                        <th scope="col">削除</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="storedFile : ${uploadForm.storedFiles}">
+                        <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"/></td>
+                        <td><span th:text="${storedFile.displaySize()}"/></td>
+                        <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <form name="deleteForm" th:action="@{/file/delete/}" method="POST"/>
+            </div>
+        </main>
+    </div>
+</section>
+<footer>
+    <div class="footer-inner container">
+        footer
+    </div>
+</footer>
+<script>
+    function submitDeleteRequest(fileId) {
+        let form = document.deleteForm;
+        form.action = form.action + fileId
+        form.submit();
+        return false;
+    }
+
+    function submitUpload() {
+        let form = document.uploadForm;
+        form.submit();
+    }
+</script>
+</body>
+</html>

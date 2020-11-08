@@ -33,7 +33,7 @@ public class UploadController {
     public String form(UploadForm form) {
         List<StoredFile> files = fileService.search();
         form.setStoredFiles(files);
-        return "upload";
+        return "file-list";
     }
 
     @GetMapping("download/{fileId}")
