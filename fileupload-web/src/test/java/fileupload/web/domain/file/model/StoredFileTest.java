@@ -20,7 +20,7 @@ class StoredFileTest {
             "1073741824,    1GB",
     })
     public void displaySizeはsizeの単位を計算してフォーマットした文字列を返す(long size, String expected) {
-        var sut = new StoredFile(123456, "name", size);
+        var sut = new StoredFile(123456, "name", "parent", FileType.FILE, size);
         assertEquals(expected, sut.displaySize());
     }
 }

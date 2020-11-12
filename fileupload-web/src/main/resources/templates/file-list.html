@@ -31,7 +31,12 @@
                     フォルダをアップロード
                 </li>
                 <li>
-                    フォルダを追加
+                    <form name="createDirForm" th:action="@{/directory/create}" method="POST">
+                        <label for="createDirName">
+                            フォルダを追加
+                        </label>
+                        <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName" name="createDirName">
+                    </form>
                 </li>
             </ul>
         </aside>
@@ -74,6 +79,13 @@
     function submitUpload() {
         let form = document.uploadForm;
         form.submit();
+    }
+
+    function submitCreateDir() {
+        let name = prompt("追加するフォルダの名前を入力してください。")
+        let text = document.getElementById("createDirName");
+        text.value = name;
+        document.createDirForm.submit();
     }
 </script>
 </body>

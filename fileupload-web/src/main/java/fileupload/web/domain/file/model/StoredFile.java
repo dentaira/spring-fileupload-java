@@ -8,20 +8,26 @@ public class StoredFile {
 
     private final String name;
 
+    private final String parent;
+
+    private final FileType type;
+
     private final InputStream content;
 
     private final long size;
 
-    public StoredFile(int id, String name, InputStream content, long size) {
+    public StoredFile(int id, String name, String parent, FileType type, InputStream content, long size) {
         this.id = id;
         this.name = name;
+        this.parent = parent;
+        this.type = type;
         this.content = content;
         this.size = size;
     }
 
-    public StoredFile(int id, String name, long size) {
+    public StoredFile(int id, String name, String parent, FileType type, long size) {
         // TODO ファイルのコンテンツそのものとメタデータはドメインオブジェクトとして分けるべきか？
-        this(id, name, null, size);
+        this(id, name, parent, type, null, size);
     }
 
     public int getId() {
@@ -45,6 +51,11 @@ public class StoredFile {
     public static final long ONE_GIGABYTE = ONE_MEGABYTE * ONE_KILOBYTE;
 
     public String displaySize() {
+
+        if (type == FileType.DIRECTORY) {
+            return "";
+        }
+
         // TODO 少数桁まで出力したい
         if (size < ONE_KILOBYTE) {
             return size + "B";

@@ -1,5 +1,6 @@
 package fileupload.web.domain.file.service;
 
+import fileupload.web.domain.file.model.FileType;
 import fileupload.web.domain.file.model.StoredFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.sql.Types;
 import java.util.List;
 
 @Service
@@ -27,9 +29,11 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<StoredFile> search() {
-        return jdbcTemplate.query("SELECT id, name, size FROM FILE", (rs, rowNum) -> {
+        return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE", (rs, rowNum) -> {
             return new StoredFile(rs.getInt("id")
                     , rs.getString("name")
+                    , rs.getString("parent")
+                    , FileType.valueOf(rs.getString("type"))
                     , rs.getLong("size"));
         });
     }
@@ -38,10 +42,12 @@ public class FileService {
     public void register(MultipartFile multipartFile) {
         // TODO MultipartFileに依存しないようにする
         try (InputStream in = multipartFile.getInputStream()) {
-            int result = jdbcTemplate.update("INSERT INTO FILE(name, content, size) VALUES(?, ?, ?)", (ps) -> {
+            int result = jdbcTemplate.update("INSERT INTO FILE(name, content, size, parent, type) VALUES(?, ?, ?, ?, ?)", (ps) -> {
                 ps.setString(1, multipartFile.getOriginalFilename());
                 ps.setBinaryStream(2, in);
                 ps.setLong(3, multipartFile.getSize());
+                ps.setString(4, "/");
+                ps.setObject(5, FileType.FILE, Types.OTHER);
             });
             logger.info(String.valueOf(result));
 
@@ -52,10 +58,12 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public StoredFile findById(int downloadId) {
-        return (StoredFile) jdbcTemplate.query("SELECT id, name, content FROM FILE WHERE id = ?", (rs) -> {
+        return (StoredFile) jdbcTemplate.query("SELECT id, name, parent, type, content, size FROM FILE WHERE id = ?", (rs) -> {
             rs.next();
             return new StoredFile(rs.getInt("id")
                     , rs.getString("name")
+                    , rs.getString("parent")
+                    , FileType.valueOf(rs.getString("type"))
                     , rs.getBinaryStream("content")
                     , rs.getLong("size"));
         }, downloadId);
