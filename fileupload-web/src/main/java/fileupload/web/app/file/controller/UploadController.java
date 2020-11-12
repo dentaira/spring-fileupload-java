@@ -29,8 +29,8 @@ public class UploadController {
         return new UploadForm();
     }
 
-    @GetMapping("form")
-    public String form(UploadForm form) {
+    @GetMapping("home/**")
+    public String home(UploadForm form) {
         List<StoredFile> files = fileService.search();
         form.setStoredFiles(files);
         return "file-list";
@@ -47,13 +47,13 @@ public class UploadController {
     public String upload(UploadForm form, RedirectAttributes redirectAttributes) {
         fileService.register(form.getUploadFile());
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
-        return "redirect:/file/form";
+        return "redirect:/file/home";
     }
 
     @PostMapping("delete/{fileId}")
     public String delete(@PathVariable int fileId, UploadForm form, RedirectAttributes redirectAttributes) {
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
-        return "redirect:/file/form";
+        return "redirect:/file/home";
     }
 }

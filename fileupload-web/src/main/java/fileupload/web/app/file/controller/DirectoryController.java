@@ -19,6 +19,6 @@ public class DirectoryController {
     @PostMapping("create")
     public String create(@RequestParam("createDirName") String createDirName) {
         directoryService.create(createDirName);
-        return "redirect:/file/form";
+        return "redirect:/file/home";
     }
 }
