@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.sql.Types;
 import java.util.List;
 
@@ -27,26 +28,40 @@ public class FileService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Deprecated
     @Transactional(readOnly = true)
     public List<StoredFile> search() {
         return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE", (rs, rowNum) -> {
             return new StoredFile(rs.getInt("id")
                     , rs.getString("name")
-                    , rs.getString("parent")
+                    , Path.of(rs.getString("parent"))
                     , FileType.valueOf(rs.getString("type"))
                     , rs.getLong("size"));
         });
     }
 
+    @Transactional(readOnly = true)
+    public List<StoredFile> search(String fileId) {
+        return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE WHERE parent like '%' || '/' || ?"
+                , new String[]{fileId}
+                , (rs, rowNum) -> {
+                    return new StoredFile(rs.getInt("id")
+                            , rs.getString("name")
+                            , Path.of(rs.getString("parent"))
+                            , FileType.valueOf(rs.getString("type"))
+                            , rs.getLong("size"));
+                });
+    }
+
     @Transactional(rollbackFor = Exception.class)
-    public void register(MultipartFile multipartFile) {
+    public void register(MultipartFile multipartFile, String parent) {
         // TODO MultipartFileに依存しないようにする
         try (InputStream in = multipartFile.getInputStream()) {
             int result = jdbcTemplate.update("INSERT INTO FILE(name, content, size, parent, type) VALUES(?, ?, ?, ?, ?)", (ps) -> {
                 ps.setString(1, multipartFile.getOriginalFilename());
                 ps.setBinaryStream(2, in);
                 ps.setLong(3, multipartFile.getSize());
-                ps.setString(4, "/");
+                ps.setString(4, "/" + parent);
                 ps.setObject(5, FileType.FILE, Types.OTHER);
             });
             logger.info(String.valueOf(result));
@@ -62,7 +77,7 @@ public class FileService {
             rs.next();
             return new StoredFile(rs.getInt("id")
                     , rs.getString("name")
-                    , rs.getString("parent")
+                    , Path.of(rs.getString("parent"))
                     , FileType.valueOf(rs.getString("type"))
                     , rs.getBinaryStream("content")
                     , rs.getLong("size"));

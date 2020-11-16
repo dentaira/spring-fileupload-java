@@ -1,6 +1,7 @@
 package fileupload.web.domain.file.model;
 
 import java.io.InputStream;
+import java.nio.file.Path;
 
 public class StoredFile {
 
@@ -8,7 +9,7 @@ public class StoredFile {
 
     private final String name;
 
-    private final String parent;
+    private final Path parent;
 
     private final FileType type;
 
@@ -16,7 +17,7 @@ public class StoredFile {
 
     private final long size;
 
-    public StoredFile(int id, String name, String parent, FileType type, InputStream content, long size) {
+    public StoredFile(int id, String name, Path parent, FileType type, InputStream content, long size) {
         this.id = id;
         this.name = name;
         this.parent = parent;
@@ -25,7 +26,7 @@ public class StoredFile {
         this.size = size;
     }
 
-    public StoredFile(int id, String name, String parent, FileType type, long size) {
+    public StoredFile(int id, String name, Path parent, FileType type, long size) {
         // TODO ファイルのコンテンツそのものとメタデータはドメインオブジェクトとして分けるべきか？
         this(id, name, parent, type, null, size);
     }
@@ -66,5 +67,18 @@ public class StoredFile {
         } else {
             return size / ONE_GIGABYTE + "GB";
         }
+    }
+
+    public boolean isFile() {
+        return type == FileType.FILE;
+    }
+
+    public boolean isDirectory() {
+        return type == FileType.DIRECTORY;
+    }
+
+    public Path getPath() {
+        // TODO DBに保存するのはidにしないとファイル名変更がきついなぁ。画面表示がめんどい
+        return parent.resolve(name);
     }
 }

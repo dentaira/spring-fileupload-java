@@ -19,7 +19,7 @@
         <aside class="sidebar">
             <ul>
                 <li>
-                    <form name="uploadForm" th:action="@{/file/upload}" enctype="multipart/form-data" method="POST"
+                    <form name="uploadForm" th:action="@{'/file/upload/'+${currentDir}}" enctype="multipart/form-data" method="POST"
                           th:object="${uploadForm}">
                         <label for="uploadFile">
                             ファイルをアップロード
@@ -31,11 +31,12 @@
                     フォルダをアップロード
                 </li>
                 <li>
-                    <form name="createDirForm" th:action="@{/directory/create}" method="POST">
+                    <form name="createDirForm" th:action="@{'/directory/create/'+${currentDir}}" method="POST">
                         <label for="createDirName">
                             フォルダを追加
                         </label>
-                        <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName" name="createDirName">
+                        <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName"
+                               name="createDirName">
                     </form>
                 </li>
             </ul>
@@ -52,7 +53,12 @@
                     </thead>
                     <tbody>
                     <tr th:each="storedFile : ${uploadForm.storedFiles}">
-                        <td><a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"/></td>
+                        <td>
+                            <a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"
+                               th:if="${storedFile.isFile()}"/>
+                            <a th:href="@{'/file/home/'+${storedFile.id}}" th:text="${storedFile.name}"
+                               th:if="${storedFile.isDirectory()}"/>
+                        </td>
                         <td><span th:text="${storedFile.displaySize()}"/></td>
                         <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
                     </tr>

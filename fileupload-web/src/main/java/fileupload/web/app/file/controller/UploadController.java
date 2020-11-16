@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("file")
@@ -29,10 +30,12 @@ public class UploadController {
         return new UploadForm();
     }
 
-    @GetMapping("home/**")
-    public String home(UploadForm form) {
-        List<StoredFile> files = fileService.search();
+    @GetMapping({"home", "home/{fileId}"})
+    public String home(UploadForm form, @PathVariable(required = false) Optional<String> fileId, Model model) {
+        String currentDir = fileId.orElse("");
+        List<StoredFile> files = fileService.search(currentDir);
         form.setStoredFiles(files);
+        model.addAttribute("currentDir", currentDir);
         return "file-list";
     }
 
@@ -43,15 +46,18 @@ public class UploadController {
         return "storedFileDownloadView";
     }
 
-    @PostMapping("upload")
-    public String upload(UploadForm form, RedirectAttributes redirectAttributes) {
-        fileService.register(form.getUploadFile());
+    @PostMapping({"upload", "upload/{currentDir}"})
+    public String upload(UploadForm form, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
+        String parent = currentDir.orElse("");
+        fileService.register(form.getUploadFile(), parent);
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
-        return "redirect:/file/home";
+        return "redirect:/file/home/" + parent;
     }
 
     @PostMapping("delete/{fileId}")
-    public String delete(@PathVariable int fileId, UploadForm form, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable int fileId, RedirectAttributes redirectAttributes) {
+        // TODO 削除後にrootに遷移してしまう
+        // TODO フォルダを削除しても下位のファイルが削除されない
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
         return "redirect:/file/home";

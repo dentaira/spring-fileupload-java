@@ -21,11 +21,11 @@ public class DirectoryService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void create(String name) {
+    public void create(String name, String parent) {
         int result = jdbcTemplate.update("INSERT INTO FILE(name, size, parent, type) VALUES(?, ?, ?, ?)", (ps) -> {
             ps.setString(1, name);
             ps.setLong(2, 0L);
-            ps.setString(3, "/");
+            ps.setString(3, "/" + parent);
             ps.setObject(4, FileType.DIRECTORY, Types.OTHER);
         });
     }

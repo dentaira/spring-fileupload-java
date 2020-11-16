@@ -3,6 +3,8 @@ package fileupload.web.domain.file.model;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StoredFileTest {
@@ -20,7 +22,7 @@ class StoredFileTest {
             "1073741824,    1GB",
     })
     public void displaySizeはsizeの単位を計算してフォーマットした文字列を返す(long size, String expected) {
-        var sut = new StoredFile(123456, "name", "parent", FileType.FILE, size);
+        var sut = new StoredFile(123456, "name", Path.of("parent"), FileType.FILE, size);
         assertEquals(expected, sut.displaySize());
     }
 }
