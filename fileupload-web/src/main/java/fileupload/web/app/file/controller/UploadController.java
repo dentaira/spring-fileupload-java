@@ -54,12 +54,11 @@ public class UploadController {
         return "redirect:/file/home/" + parent;
     }
 
-    @PostMapping("delete/{fileId}")
-    public String delete(@PathVariable int fileId, RedirectAttributes redirectAttributes) {
-        // TODO 削除後にrootに遷移してしまう
+    @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
+    public String delete(@PathVariable int fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
         // TODO フォルダを削除しても下位のファイルが削除されない
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
-        return "redirect:/file/home";
+        return "redirect:/file/home/" + currentDir.orElse("");
     }
 }

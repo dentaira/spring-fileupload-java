@@ -19,8 +19,8 @@
         <aside class="sidebar">
             <ul>
                 <li>
-                    <form name="uploadForm" th:action="@{'/file/upload/'+${currentDir}}" enctype="multipart/form-data" method="POST"
-                          th:object="${uploadForm}">
+                    <form name="uploadForm" th:action="@{'/file/upload/'+${currentDir}}" enctype="multipart/form-data"
+                          method="POST" th:object="${uploadForm}">
                         <label for="uploadFile">
                             ファイルをアップロード
                         </label>
@@ -74,10 +74,11 @@
         footer
     </div>
 </footer>
-<script>
+<script th:inline="javascript">
     function submitDeleteRequest(fileId) {
         let form = document.deleteForm;
-        form.action = form.action + fileId
+        let currentDir = /*[[${currentDir}]]*/ '';
+        form.action = form.action + currentDir + (currentDir === '' ? '' : '/') + fileId;
         form.submit();
         return false;
     }
