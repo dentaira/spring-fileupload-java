@@ -15,6 +15,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.sql.Types;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FileService {
@@ -28,26 +29,27 @@ public class FileService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Deprecated
     @Transactional(readOnly = true)
     public List<StoredFile> search() {
-        return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE", (rs, rowNum) -> {
-            return new StoredFile(rs.getInt("id")
-                    , rs.getString("name")
-                    , Path.of(rs.getString("parent"))
-                    , FileType.valueOf(rs.getString("type"))
-                    , rs.getLong("size"));
-        });
+        return jdbcTemplate.query("SELECT id, name, path, type, size FROM FILE WHERE cast(id as text) = replace(path, '/', '')"
+                , (rs, rowNum) -> {
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
+                            , rs.getString("name")
+                            , Path.of(rs.getString("path"))
+                            , FileType.valueOf(rs.getString("type"))
+                            , rs.getLong("size"));
+                });
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> search(String fileId) {
-        return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE WHERE parent like '%' || '/' || ?"
-                , new String[]{fileId}
+    public List<StoredFile> search(String dirId) {
+        return jdbcTemplate.query("SELECT id, name, path, type, size FROM FILE WHERE path like "
+                        + "(SELECT path FROM FILE WHERE id = ?) || '%'"
+                , (ps) -> ps.setInt(1, Integer.parseInt(dirId))
                 , (rs, rowNum) -> {
-                    return new StoredFile(rs.getInt("id")
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
-                            , Path.of(rs.getString("parent"))
+                            , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
                             , rs.getLong("size"));
                 });
@@ -57,13 +59,17 @@ public class FileService {
     public void register(MultipartFile multipartFile, String parent) {
         // TODO MultipartFileに依存しないようにする
         try (InputStream in = multipartFile.getInputStream()) {
-            int result = jdbcTemplate.update("INSERT INTO FILE(name, content, size, parent, type) VALUES(?, ?, ?, ?, ?)", (ps) -> {
-                ps.setString(1, multipartFile.getOriginalFilename());
-                ps.setBinaryStream(2, in);
-                ps.setLong(3, multipartFile.getSize());
-                ps.setString(4, "/" + parent);
-                ps.setObject(5, FileType.FILE, Types.OTHER);
-            });
+            // TODO IDをパスに使用するためあらかじめ採番する必要がある
+            var id = UUID.randomUUID().toString();
+            int result = jdbcTemplate.update("INSERT INTO FILE(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
+                    , (ps) -> {
+                        ps.setString(1, id);
+                        ps.setString(2, multipartFile.getOriginalFilename());
+                        ps.setBinaryStream(3, in);
+                        ps.setLong(4, multipartFile.getSize());
+                        ps.setString(5, parent + id);
+                        ps.setObject(6, FileType.FILE, Types.OTHER);
+                    });
             logger.info(String.valueOf(result));
 
         } catch (IOException e) {
@@ -73,11 +79,11 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public StoredFile findById(int downloadId) {
-        return (StoredFile) jdbcTemplate.query("SELECT id, name, parent, type, content, size FROM FILE WHERE id = ?", (rs) -> {
+        return (StoredFile) jdbcTemplate.query("SELECT id, name, path, type, content, size FROM FILE WHERE id = ?", (rs) -> {
             rs.next();
-            return new StoredFile(rs.getInt("id")
+            return new StoredFile(UUID.fromString(rs.getString("id"))
                     , rs.getString("name")
-                    , Path.of(rs.getString("parent"))
+                    , Path.of(rs.getString("path"))
                     , FileType.valueOf(rs.getString("type"))
                     , rs.getBinaryStream("content")
                     , rs.getLong("size"));

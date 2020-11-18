@@ -60,7 +60,7 @@
                                th:if="${storedFile.isDirectory()}"/>
                         </td>
                         <td><span th:text="${storedFile.displaySize()}"/></td>
-                        <td><a href="#" th:onclick="'submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
+                        <td><a href="#" th:attr="onclick='submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
                     </tr>
                     </tbody>
                 </table>
