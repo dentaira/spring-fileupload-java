@@ -39,12 +39,11 @@ public class UploadController {
     }
 
     @GetMapping("home/{fileId}")
-    public String home(UploadForm form, @PathVariable(required = false) Optional<String> fileId, Model model) {
+    public String home(UploadForm form, @PathVariable String fileId, Model model) {
         // TODO Rootを検索する場合はSQLを分ける。深さで探す。
-        String currentDir = fileId.orElse("");
-        List<StoredFile> files = fileService.search(currentDir);
+        List<StoredFile> files = fileService.search(fileId);
         form.setStoredFiles(files);
-        model.addAttribute("currentDir", currentDir);
+        model.addAttribute("currentDir", fileId);
         return "file-list";
     }
 
@@ -57,7 +56,7 @@ public class UploadController {
 
     @PostMapping({"upload", "upload/{currentDir}"})
     public String upload(UploadForm form, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
-        String parent = currentDir.orElse("/");
+        String parent = "/" + currentDir.orElse("");
         fileService.register(form.getUploadFile(), parent);
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
         return "redirect:/file/home" + parent;

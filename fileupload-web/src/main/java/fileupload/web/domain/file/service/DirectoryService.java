@@ -7,7 +7,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Path;
 import java.sql.Types;
+import java.util.UUID;
 
 @Service
 public class DirectoryService {
@@ -22,11 +24,15 @@ public class DirectoryService {
 
     @Transactional(rollbackFor = Exception.class)
     public void create(String name, String parent) {
-        int result = jdbcTemplate.update("INSERT INTO FILE(name, size, parent, type) VALUES(?, ?, ?, ?)", (ps) -> {
-            ps.setString(1, name);
-            ps.setLong(2, 0L);
-            ps.setString(3, "/" + parent);
-            ps.setObject(4, FileType.DIRECTORY, Types.OTHER);
-        });
+        int result = jdbcTemplate.update("INSERT INTO FILE(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
+                , (ps) -> {
+                    var id = UUID.randomUUID().toString();
+                    ps.setString(1, id);
+                    ps.setString(2, name);
+                    ps.setLong(3, 0L);
+                    // TODO 親のパスは取得しないといけない
+                    ps.setString(4, Path.of(parent, id).toString() + "/");
+                    ps.setObject(5, FileType.DIRECTORY, Types.OTHER);
+                });
     }
 }

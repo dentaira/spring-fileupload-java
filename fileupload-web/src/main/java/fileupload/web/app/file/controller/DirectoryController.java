@@ -21,8 +21,8 @@ public class DirectoryController {
 
     @PostMapping({"create", "create/{currentDir}"})
     public String create(@RequestParam("createDirName") String createDirName, @PathVariable Optional<String> currentDir) {
-        String parent = currentDir.orElse("");
+        String parent = "/" + currentDir.orElse("");
         directoryService.create(createDirName, parent);
-        return "redirect:/file/home/" + parent;
+        return "redirect:/file/home" + parent;
     }
 }

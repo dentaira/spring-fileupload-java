@@ -43,9 +43,9 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<StoredFile> search(String dirId) {
-        return jdbcTemplate.query("SELECT id, name, path, type, size FROM FILE WHERE path like "
-                        + "(SELECT path FROM FILE WHERE id = ?) || '%'"
-                , (ps) -> ps.setInt(1, Integer.parseInt(dirId))
+        return jdbcTemplate.query("SELECT id, name, path, type, size FROM FILE WHERE path LIKE "
+                        + "(SELECT path FROM FILE WHERE id = ?) || '_%'"
+                , (ps) -> ps.setString(1, dirId)
                 , (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -59,7 +59,6 @@ public class FileService {
     public void register(MultipartFile multipartFile, String parent) {
         // TODO MultipartFileに依存しないようにする
         try (InputStream in = multipartFile.getInputStream()) {
-            // TODO IDをパスに使用するためあらかじめ採番する必要がある
             var id = UUID.randomUUID().toString();
             int result = jdbcTemplate.update("INSERT INTO FILE(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
                     , (ps) -> {
@@ -67,7 +66,8 @@ public class FileService {
                         ps.setString(2, multipartFile.getOriginalFilename());
                         ps.setBinaryStream(3, in);
                         ps.setLong(4, multipartFile.getSize());
-                        ps.setString(5, parent + id);
+                        // TODO 親のパスは取得しないといけない
+                        ps.setString(5, Path.of(parent, id).toString() + "/");
                         ps.setObject(6, FileType.FILE, Types.OTHER);
                     });
             logger.info(String.valueOf(result));
