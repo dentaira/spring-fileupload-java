@@ -31,7 +31,8 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<StoredFile> search() {
-        return jdbcTemplate.query("SELECT id, name, path, type, size FROM FILE WHERE cast(id as text) = replace(path, '/', '')"
+        return jdbcTemplate.query(
+                "SELECT id, name, path, type, size FROM FILE WHERE cast(id as text) = replace(path, '/', '')"
                 , (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -43,9 +44,19 @@ public class FileService {
 
     @Transactional(readOnly = true)
     public List<StoredFile> search(String dirId) {
-        return jdbcTemplate.query("SELECT id, name, path, type, size FROM FILE WHERE path LIKE "
-                        + "(SELECT path FROM FILE WHERE id = ?) || '_%'"
-                , (ps) -> ps.setString(1, dirId)
+        int level = jdbcTemplate.queryForObject(
+                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM FILE WHERE id = ?"
+                , new Object[]{dirId}
+                , Integer.class);
+
+        return jdbcTemplate.query(
+                "SELECT id, name, path, type, size FROM FILE"
+                        + " WHERE path LIKE (SELECT path FROM FILE WHERE id = ?) || '_%'"
+                        + " AND LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = (? + 1)"
+                , (ps) -> {
+                    ps.setString(1, dirId);
+                    ps.setInt(2, level);
+                }
                 , (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -56,18 +67,19 @@ public class FileService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void register(MultipartFile multipartFile, String parent) {
+    public void register(MultipartFile multipartFile, Path parentPath) {
         // TODO MultipartFileに依存しないようにする
+
         try (InputStream in = multipartFile.getInputStream()) {
             var id = UUID.randomUUID().toString();
-            int result = jdbcTemplate.update("INSERT INTO FILE(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
+            int result = jdbcTemplate.update(
+                    "INSERT INTO FILE(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
                     , (ps) -> {
                         ps.setString(1, id);
                         ps.setString(2, multipartFile.getOriginalFilename());
                         ps.setBinaryStream(3, in);
                         ps.setLong(4, multipartFile.getSize());
-                        // TODO 親のパスは取得しないといけない
-                        ps.setString(5, Path.of(parent, id).toString() + "/");
+                        ps.setString(5, parentPath.resolve(id).toString() + "/");
                         ps.setObject(6, FileType.FILE, Types.OTHER);
                     });
             logger.info(String.valueOf(result));
@@ -78,16 +90,29 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public StoredFile findById(int downloadId) {
-        return (StoredFile) jdbcTemplate.query("SELECT id, name, path, type, content, size FROM FILE WHERE id = ?", (rs) -> {
-            rs.next();
-            return new StoredFile(UUID.fromString(rs.getString("id"))
-                    , rs.getString("name")
-                    , Path.of(rs.getString("path"))
-                    , FileType.valueOf(rs.getString("type"))
-                    , rs.getBinaryStream("content")
-                    , rs.getLong("size"));
-        }, downloadId);
+    public StoredFile findById(String downloadId) {
+        return (StoredFile) jdbcTemplate.query(
+                "SELECT id, name, path, type, content, size FROM FILE WHERE id = ?"
+                , (rs) -> {
+                    rs.next();
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
+                            , rs.getString("name")
+                            , Path.of(rs.getString("path"))
+                            , FileType.valueOf(rs.getString("type"))
+                            , rs.getBinaryStream("content")
+                            , rs.getLong("size"));
+                }, downloadId);
+    }
+
+    @Transactional(readOnly = true)
+    public Path findPathById(String id) {
+        return jdbcTemplate.query(
+                "SELECT path FROM FILE WHERE id = ?"
+                , rs -> {
+                    rs.next();
+                    return Path.of(rs.getString("path"));
+                }
+                , id);
     }
 
     @Transactional(rollbackFor = Exception.class)

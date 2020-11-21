@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +41,6 @@ public class UploadController {
 
     @GetMapping("home/{fileId}")
     public String home(UploadForm form, @PathVariable String fileId, Model model) {
-        // TODO Rootを検索する場合はSQLを分ける。深さで探す。
         List<StoredFile> files = fileService.search(fileId);
         form.setStoredFiles(files);
         model.addAttribute("currentDir", fileId);
@@ -48,7 +48,7 @@ public class UploadController {
     }
 
     @GetMapping("download/{fileId}")
-    public String download(@PathVariable int fileId, Model model) {
+    public String download(@PathVariable String fileId, Model model) {
         StoredFile downloadFile = fileService.findById(fileId);
         model.addAttribute("downloadFile", downloadFile);
         return "storedFileDownloadView";
@@ -56,10 +56,15 @@ public class UploadController {
 
     @PostMapping({"upload", "upload/{currentDir}"})
     public String upload(UploadForm form, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
-        String parent = "/" + currentDir.orElse("");
-        fileService.register(form.getUploadFile(), parent);
+        Path parentPath = null;
+        if (currentDir.isPresent()) {
+            parentPath = fileService.findPathById(currentDir.get());
+        } else {
+            parentPath = Path.of("/");
+        }
+        fileService.register(form.getUploadFile(), parentPath);
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
-        return "redirect:/file/home" + parent;
+        return "redirect:/file/home/" + currentDir.orElse("");
     }
 
     @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})

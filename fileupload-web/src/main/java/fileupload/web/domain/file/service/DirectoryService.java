@@ -23,15 +23,16 @@ public class DirectoryService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void create(String name, String parent) {
-        int result = jdbcTemplate.update("INSERT INTO FILE(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
+    public void create(String name, Path parentPath) {
+
+        jdbcTemplate.update(
+                "INSERT INTO FILE(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
                 , (ps) -> {
                     var id = UUID.randomUUID().toString();
                     ps.setString(1, id);
                     ps.setString(2, name);
                     ps.setLong(3, 0L);
-                    // TODO 親のパスは取得しないといけない
-                    ps.setString(4, Path.of(parent, id).toString() + "/");
+                    ps.setString(4, parentPath.resolve(id).toString() + "/");
                     ps.setObject(5, FileType.DIRECTORY, Types.OTHER);
                 });
     }
