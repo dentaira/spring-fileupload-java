@@ -60,7 +60,7 @@
                                th:if="${storedFile.isDirectory()}"/>
                         </td>
                         <td><span th:text="${storedFile.displaySize()}"/></td>
-                        <td><a href="#" th:attr="onclick='submitDeleteRequest('+${storedFile.id}+')'">削除</a></td>
+                        <td><a name="delete" href="JavaScript:void(0)" th:data-id="${storedFile.id}">削除</a></td>
                     </tr>
                     </tbody>
                 </table>
@@ -75,13 +75,18 @@
     </div>
 </footer>
 <script th:inline="javascript">
-    function submitDeleteRequest(fileId) {
-        let form = document.deleteForm;
-        let currentDir = /*[[${currentDir}]]*/ '';
-        form.action = form.action + currentDir + (currentDir === '' ? '' : '/') + fileId;
-        form.submit();
-        return false;
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementsByName('delete').forEach(function (value, key, parent) {
+            value.addEventListener('click', function (e) {
+                let form = document.deleteForm;
+                let currentDir = /*[[${currentDir}]]*/ '';
+                let fileId = this.getAttribute('data-id');
+                form.action = form.action + currentDir + (currentDir === '' ? '' : '/') + fileId;
+                form.submit();
+                e.preventDefault();
+            })
+        })
+    })
 
     function submitUpload() {
         let form = document.uploadForm;

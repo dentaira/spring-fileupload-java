@@ -68,7 +68,7 @@ public class UploadController {
     }
 
     @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
-    public String delete(@PathVariable int fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
+    public String delete(@PathVariable String fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
         // TODO フォルダを削除しても下位のファイルが削除されない
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");

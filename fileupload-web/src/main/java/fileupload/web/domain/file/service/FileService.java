@@ -116,7 +116,7 @@ public class FileService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void delete(int fileId) {
+    public void delete(String fileId) {
         jdbcTemplate.update("DELETE FROM FILE WHERE id = ?", fileId);
     }
 }
