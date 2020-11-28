@@ -69,7 +69,6 @@ public class UploadController {
 
     @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
     public String delete(@PathVariable String fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
-        // TODO フォルダを削除しても下位のファイルが削除されない
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
         return "redirect:/file/home/" + currentDir.orElse("");
