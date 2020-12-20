@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,17 +31,24 @@ public class UploadController {
         return new UploadForm();
     }
 
-    @GetMapping({"home", "home/{fileId}"})
-    public String home(UploadForm form, @PathVariable(required = false) Optional<String> fileId, Model model) {
-        String currentDir = fileId.orElse("");
-        List<StoredFile> files = fileService.search(currentDir);
+    @GetMapping("home")
+    public String home(UploadForm form, Model model) {
+        List<StoredFile> files = fileService.search();
         form.setStoredFiles(files);
-        model.addAttribute("currentDir", currentDir);
+        model.addAttribute("currentDir", "");
+        return "file-list";
+    }
+
+    @GetMapping("home/{fileId}")
+    public String home(UploadForm form, @PathVariable String fileId, Model model) {
+        List<StoredFile> files = fileService.search(fileId);
+        form.setStoredFiles(files);
+        model.addAttribute("currentDir", fileId);
         return "file-list";
     }
 
     @GetMapping("download/{fileId}")
-    public String download(@PathVariable int fileId, Model model) {
+    public String download(@PathVariable String fileId, Model model) {
         StoredFile downloadFile = fileService.findById(fileId);
         model.addAttribute("downloadFile", downloadFile);
         return "storedFileDownloadView";
@@ -48,18 +56,21 @@ public class UploadController {
 
     @PostMapping({"upload", "upload/{currentDir}"})
     public String upload(UploadForm form, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
-        String parent = currentDir.orElse("");
-        fileService.register(form.getUploadFile(), parent);
+        Path parentPath = null;
+        if (currentDir.isPresent()) {
+            parentPath = fileService.findPathById(currentDir.get());
+        } else {
+            parentPath = Path.of("/");
+        }
+        fileService.register(form.getUploadFile(), parentPath);
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
-        return "redirect:/file/home/" + parent;
+        return "redirect:/file/home/" + currentDir.orElse("");
     }
 
-    @PostMapping("delete/{fileId}")
-    public String delete(@PathVariable int fileId, RedirectAttributes redirectAttributes) {
-        // TODO 削除後にrootに遷移してしまう
-        // TODO フォルダを削除しても下位のファイルが削除されない
+    @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
+    public String delete(@PathVariable String fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
-        return "redirect:/file/home";
+        return "redirect:/file/home/" + currentDir.orElse("");
     }
 }

@@ -15,6 +15,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.sql.Types;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FileService {
@@ -28,42 +29,59 @@ public class FileService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Deprecated
     @Transactional(readOnly = true)
     public List<StoredFile> search() {
-        return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE", (rs, rowNum) -> {
-            return new StoredFile(rs.getInt("id")
-                    , rs.getString("name")
-                    , Path.of(rs.getString("parent"))
-                    , FileType.valueOf(rs.getString("type"))
-                    , rs.getLong("size"));
-        });
+        return jdbcTemplate.query(
+                "SELECT id, name, path, type, size FROM FILE WHERE cast(id as text) = replace(path, '/', '')"
+                , (rs, rowNum) -> {
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
+                            , rs.getString("name")
+                            , Path.of(rs.getString("path"))
+                            , FileType.valueOf(rs.getString("type"))
+                            , rs.getLong("size"));
+                });
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> search(String fileId) {
-        return jdbcTemplate.query("SELECT id, name, parent, type, size FROM FILE WHERE parent like '%' || '/' || ?"
-                , new String[]{fileId}
+    public List<StoredFile> search(String dirId) {
+        int level = jdbcTemplate.queryForObject(
+                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM FILE WHERE id = ?"
+                , new Object[]{dirId}
+                , Integer.class);
+
+        return jdbcTemplate.query(
+                "SELECT id, name, path, type, size FROM FILE"
+                        + " WHERE path LIKE (SELECT path FROM FILE WHERE id = ?) || '_%'"
+                        + " AND LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = (? + 1)"
+                , (ps) -> {
+                    ps.setString(1, dirId);
+                    ps.setInt(2, level);
+                }
                 , (rs, rowNum) -> {
-                    return new StoredFile(rs.getInt("id")
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
-                            , Path.of(rs.getString("parent"))
+                            , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
                             , rs.getLong("size"));
                 });
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void register(MultipartFile multipartFile, String parent) {
+    public void register(MultipartFile multipartFile, Path parentPath) {
         // TODO MultipartFileに依存しないようにする
+
         try (InputStream in = multipartFile.getInputStream()) {
-            int result = jdbcTemplate.update("INSERT INTO FILE(name, content, size, parent, type) VALUES(?, ?, ?, ?, ?)", (ps) -> {
-                ps.setString(1, multipartFile.getOriginalFilename());
-                ps.setBinaryStream(2, in);
-                ps.setLong(3, multipartFile.getSize());
-                ps.setString(4, "/" + parent);
-                ps.setObject(5, FileType.FILE, Types.OTHER);
-            });
+            var id = UUID.randomUUID().toString();
+            int result = jdbcTemplate.update(
+                    "INSERT INTO FILE(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
+                    , (ps) -> {
+                        ps.setString(1, id);
+                        ps.setString(2, multipartFile.getOriginalFilename());
+                        ps.setBinaryStream(3, in);
+                        ps.setLong(4, multipartFile.getSize());
+                        ps.setString(5, parentPath.resolve(id).toString() + "/");
+                        ps.setObject(6, FileType.FILE, Types.OTHER);
+                    });
             logger.info(String.valueOf(result));
 
         } catch (IOException e) {
@@ -72,21 +90,40 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public StoredFile findById(int downloadId) {
-        return (StoredFile) jdbcTemplate.query("SELECT id, name, parent, type, content, size FROM FILE WHERE id = ?", (rs) -> {
-            rs.next();
-            return new StoredFile(rs.getInt("id")
-                    , rs.getString("name")
-                    , Path.of(rs.getString("parent"))
-                    , FileType.valueOf(rs.getString("type"))
-                    , rs.getBinaryStream("content")
-                    , rs.getLong("size"));
-        }, downloadId);
+    public StoredFile findById(String downloadId) {
+        return (StoredFile) jdbcTemplate.query(
+                "SELECT id, name, path, type, content, size FROM FILE WHERE id = ?"
+                , (rs) -> {
+                    rs.next();
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
+                            , rs.getString("name")
+                            , Path.of(rs.getString("path"))
+                            , FileType.valueOf(rs.getString("type"))
+                            , rs.getBinaryStream("content")
+                            , rs.getLong("size"));
+                }, downloadId);
+    }
+
+    @Transactional(readOnly = true)
+    public Path findPathById(String id) {
+        return jdbcTemplate.query(
+                "SELECT path FROM FILE WHERE id = ?"
+                , rs -> {
+                    rs.next();
+                    return Path.of(rs.getString("path"));
+                }
+                , id);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void delete(int fileId) {
-        jdbcTemplate.update("DELETE FROM FILE WHERE id = ?", fileId);
+    public int delete(String fileId) {
+        FileType type = jdbcTemplate.queryForObject("SELECT type FROM FILE WHERE id = ?", FileType.class, fileId);
+        if (type == FileType.FILE) {
+            return jdbcTemplate.update("DELETE FROM FILE WHERE id = ?", fileId);
+        } else {
+            Path path = findPathById(fileId);
+            return jdbcTemplate.update("DELETE FROM FILE WHERE path LIKE ? || '%'", path.toString() + "/");
+        }
     }
 }
 
