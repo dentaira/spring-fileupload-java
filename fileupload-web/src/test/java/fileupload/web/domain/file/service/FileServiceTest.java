@@ -1,6 +1,8 @@
 package fileupload.web.domain.file.service;
 
 import com.github.springtestdbunit.annotation.DatabaseSetup;
+import com.github.springtestdbunit.annotation.ExpectedDatabase;
+import com.github.springtestdbunit.assertion.DatabaseAssertionMode;
 import fileupload.web.domain.file.model.StoredFile;
 import fileupload.web.test.infra.dbunit.annotation.DbUnitTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,6 +64,36 @@ class FileServiceTest {
         void 引数にファイルIDを渡した場合は空例外が発生する() {
             List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
             assertEquals(0, actual.size());
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DbUnitTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    class deleteメソッドはファイルを削除する {
+
+        @BeforeEach
+        public void setUp() {
+            sut = new FileService(jdbcTemplate);
+        }
+
+        @Test
+        @DatabaseSetup("FileServiceTest.delete.xml")
+        @ExpectedDatabase(value = "expected-引数にファイルのIDを渡した場合は指定したファイルのみを削除する.xml"
+                , assertionMode = DatabaseAssertionMode.NON_STRICT_UNORDERED)
+        void 引数にファイルのIDを渡した場合は指定したファイルを削除する() {
+            int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
+            assertEquals(1, count);
+        }
+
+        @Test
+        @DatabaseSetup("FileServiceTest.delete.xml")
+        @ExpectedDatabase(value = "expected-引数にフォルダのIDを渡した場合は指定したフォルダおよび配下のファイルとフォルダを全て削除する.xml"
+                , assertionMode = DatabaseAssertionMode.NON_STRICT_UNORDERED)
+        void 引数にフォルダのIDを渡した場合は指定したフォルダおよび配下のファイルとフォルダを全て削除する() {
+            int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
+            assertEquals(3, count);
         }
     }
 }
