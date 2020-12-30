@@ -21,6 +21,8 @@ import java.util.*;
 @Service
 public class FileService {
 
+    public static final Path ROOT_PATH = Path.of("/");
+
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     // TODO Repositoryを作成する
@@ -132,6 +134,11 @@ public class FileService {
 
         // パスを取得
         Path path = findPathById(id);
+
+        if (path.getParent().equals(ROOT_PATH)) {
+            return new Directories(Collections.emptyList());
+        }
+
         // パラメータとプレースホルダーを作成
         var params = new ArrayList<String>();
         var placeholders = new ArrayList<String>();
@@ -139,11 +146,6 @@ public class FileService {
             Path p = itr.next();
             params.add(p.toString());
             placeholders.add("?");
-        }
-
-        // TODO もっと前にできそう
-        if (params.isEmpty()) {
-            return new Directories(Collections.emptyList());
         }
 
         // SQLを作成
