@@ -10,6 +10,11 @@ public class StoredFile {
 
     private final String name;
 
+    /**
+     * TODO 必要ない。祖先のStoredFileオブジェクトを持った方がいい。
+     * ただし、上記の修正を行なってもDBの経路列挙モデルを持ち込んでいることには代わりない。
+     * Javaとしては単純に親のみを参照する木構造にした方がいいかもしれない。
+     */
     private final Path path;
 
     private final FileType type;

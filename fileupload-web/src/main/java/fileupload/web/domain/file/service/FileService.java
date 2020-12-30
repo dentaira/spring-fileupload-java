@@ -1,7 +1,9 @@
 package fileupload.web.domain.file.service;
 
+import fileupload.web.domain.file.model.Directories;
 import fileupload.web.domain.file.model.FileType;
 import fileupload.web.domain.file.model.StoredFile;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,8 +16,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.sql.Types;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class FileService {
@@ -124,6 +125,51 @@ public class FileService {
             Path path = findPathById(fileId);
             return jdbcTemplate.update("DELETE FROM FILE WHERE path LIKE ? || '%'", path.toString() + "/");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Directories findAncestors(String id) {
+
+        // パスを取得
+        Path path = findPathById(id);
+        // パラメータとプレースホルダーを作成
+        var params = new ArrayList<String>();
+        var placeholders = new ArrayList<String>();
+        for (Iterator<Path> itr = path.getParent().iterator(); itr.hasNext(); ) {
+            Path p = itr.next();
+            params.add(p.toString());
+            placeholders.add("?");
+        }
+
+        // TODO もっと前にできそう
+        if (params.isEmpty()) {
+            return new Directories(Collections.emptyList());
+        }
+
+        // SQLを作成
+        var sql = new StringBuilder("SELECT id, name, path, type, size FROM file WHERE id IN (");
+        String in = StringUtils.join(placeholders, ", ");
+        sql.append(in).append(")");
+        sql.append("ORDER BY char_length(path)");
+
+        // SQL実行
+        List<StoredFile> ancestors = jdbcTemplate.query(sql.toString(),
+                (ps) -> {
+                    for (int i = 0; i < params.size(); i++) {
+                        ps.setString(i + 1, params.get(i));
+                    }
+                },
+                (rs, rowNum) -> {
+                    return new StoredFile(
+                            UUID.fromString(rs.getString("id")),
+                            rs.getString("name"),
+                            Path.of(rs.getString("path")),
+                            FileType.valueOf(rs.getString("type")),
+                            rs.getLong("size")
+                    );
+                });
+
+        return new Directories(ancestors);
     }
 }
 
