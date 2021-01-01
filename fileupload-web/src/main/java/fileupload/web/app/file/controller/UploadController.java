@@ -1,6 +1,7 @@
 package fileupload.web.app.file.controller;
 
 import fileupload.web.app.file.form.UploadForm;
+import fileupload.web.domain.file.model.Directories;
 import fileupload.web.domain.file.model.StoredFile;
 import fileupload.web.domain.file.service.FileService;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class UploadController {
     public String home(UploadForm form, Model model) {
         List<StoredFile> files = fileService.search();
         form.setStoredFiles(files);
-        model.addAttribute("currentDir", "");
+        model.addAttribute("ancestors", Directories.empty());
         return "file-list";
     }
 
@@ -43,7 +44,13 @@ public class UploadController {
     public String home(UploadForm form, @PathVariable String fileId, Model model) {
         List<StoredFile> files = fileService.search(fileId);
         form.setStoredFiles(files);
-        model.addAttribute("currentDir", fileId);
+
+        StoredFile currentDir = fileService.findById(fileId);
+        model.addAttribute("currentDir", currentDir);
+
+        Directories ancestors = fileService.findAncestors(fileId);
+        model.addAttribute("ancestors", ancestors);
+
         return "file-list";
     }
 
