@@ -19,21 +19,24 @@
         <div class="breadcrumb">
             <ol>
                 <li>
-                    <a th:href="@{/file/home}" >home</a>
+                    <a th:href="@{/file/home}">home</a>
                 </li>
                 <li th:each="dir : ${ancestors.value()}">
                     <a th:href="@{'/file/home/'+${dir.id}}" th:text="${dir.name}"></a>
+                </li>
+                <li th:if="${currentDir != null}">
+                    <span th:text="${currentDir.name}"/>
                 </li>
             </ol>
         </div>
     </div>
 </section>
-<section>
+<section th:with="currentDirId=${currentDir == null}? '' : ${currentDir.id}">
     <div class="container">
         <aside class="sidebar">
             <ul>
                 <li>
-                    <form name="uploadForm" th:action="@{'/file/upload/'+${currentDir}}" enctype="multipart/form-data"
+                    <form name="uploadForm" th:action="@{'/file/upload/'+${currentDirId}}" enctype="multipart/form-data"
                           method="POST" th:object="${uploadForm}">
                         <label for="uploadFile">
                             ファイルをアップロード
@@ -45,7 +48,7 @@
                     フォルダをアップロード
                 </li>
                 <li>
-                    <form name="createDirForm" th:action="@{'/directory/create/'+${currentDir}}" method="POST">
+                    <form name="createDirForm" th:action="@{'/directory/create/'+${currentDirId}}" method="POST">
                         <label for="createDirName">
                             フォルダを追加
                         </label>
@@ -93,9 +96,9 @@
         document.getElementsByName('delete').forEach(function (value, key, parent) {
             value.addEventListener('click', function (e) {
                 let form = document.deleteForm;
-                let currentDir = /*[[${currentDir}]]*/ '';
+                let currentDirId = /*[[${currentDir == null}? '' : ${currentDir.id}]]*/ '';
                 let fileId = this.getAttribute('data-id');
-                form.action = form.action + currentDir + (currentDir === '' ? '' : '/') + fileId;
+                form.action = form.action + currentDirId + (currentDirId === '' ? '' : '/') + fileId;
                 form.submit();
                 e.preventDefault();
             })

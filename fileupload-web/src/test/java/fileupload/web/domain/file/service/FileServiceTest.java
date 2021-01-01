@@ -120,5 +120,14 @@ class FileServiceTest {
             assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"), list.get(0).getId());
             assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12"), list.get(1).getId());
         }
+
+        @Test
+        @DatabaseSetup("FileServiceTest.findAncestors.xml")
+        void root直下のファイルの場合は空のリストを返す() {
+            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11";
+            Directories actual = sut.findAncestors(param);
+            List<StoredFile> list = actual.value();
+            assertEquals(0, list.size());
+        }
     }
 }

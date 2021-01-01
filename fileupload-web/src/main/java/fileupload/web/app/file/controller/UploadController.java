@@ -37,7 +37,6 @@ public class UploadController {
         List<StoredFile> files = fileService.search();
         form.setStoredFiles(files);
         model.addAttribute("ancestors", Directories.empty());
-        model.addAttribute("currentDir", "");
         return "file-list";
     }
 
@@ -45,9 +44,13 @@ public class UploadController {
     public String home(UploadForm form, @PathVariable String fileId, Model model) {
         List<StoredFile> files = fileService.search(fileId);
         form.setStoredFiles(files);
+
+        StoredFile currentDir = fileService.findById(fileId);
+        model.addAttribute("currentDir", currentDir);
+
         Directories ancestors = fileService.findAncestors(fileId);
         model.addAttribute("ancestors", ancestors);
-        model.addAttribute("currentDir", fileId);
+
         return "file-list";
     }
 
