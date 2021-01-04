@@ -111,7 +111,10 @@
     }
 
     function submitCreateDir() {
-        let name = prompt("追加するフォルダの名前を入力してください。")
+        let name = prompt("追加するフォルダの名前を入力してください。");
+        if (name === null) {
+            return;
+        }
         let text = document.getElementById("createDirName");
         text.value = name;
         document.createDirForm.submit();
