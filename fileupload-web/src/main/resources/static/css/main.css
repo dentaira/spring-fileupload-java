@@ -103,19 +103,23 @@ section .container {
     width: 32px;
 }
 .file-size-text {
-    font-size: 90%;
+    font-size: 0.9rem;
 }
 
 .footer-inner {
 }
 
 /* パンくずリスト */
+.breadcrumb {
+    min-height: 70px;
+}
 .breadcrumb ol {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 .breadcrumb li {
+    font-size: 1.4rem;
     display: inline;
 }
 .breadcrumb li::after {
