@@ -86,6 +86,24 @@ section .container {
 }
 .file-table th, .file-table td {
     border-bottom: 1px lightgray solid;
+    height: 50px;
+}
+.file-icon {
+    float: left;
+    margin: auto 15px;
+}
+.file-icon[file-type="FILE"] {
+    content: url(../image/file.png);
+    height: 32px;
+    width: 32px;
+}
+.file-icon[file-type="DIRECTORY"] {
+    content: url(../image/folder.png);
+    height: 32px;
+    width: 32px;
+}
+.file-size-text {
+    font-size: 90%;
 }
 
 .footer-inner {

@@ -51,20 +51,23 @@
                 <table class="file-table">
                     <thead>
                     <tr>
-                        <th scope="col">名前</th>
-                        <th scope="col">ファイルサイズ</th>
+                        <th scope="col">ファイル名</th>
+                        <th scope="col">サイズ</th>
                         <th scope="col">削除</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="storedFile : ${uploadForm.storedFiles}">
                         <td>
-                            <a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"
-                               th:if="${storedFile.isFile()}"/>
-                            <a th:href="@{'/file/home/'+${storedFile.id}}" th:text="${storedFile.name}"
-                               th:if="${storedFile.isDirectory()}"/>
+                            <div class="float-clear">
+                                <div class="file-icon" th:file-type="${storedFile.type}"></div>
+                                <a th:href="@{'/file/download/'+${storedFile.id}}" th:text="${storedFile.name}"
+                                   th:if="${storedFile.isFile()}"/>
+                                <a th:href="@{'/file/home/'+${storedFile.id}}" th:text="${storedFile.name}"
+                                   th:if="${storedFile.isDirectory()}"/>
+                            </div>
                         </td>
-                        <td><span th:text="${storedFile.displaySize()}"/></td>
+                        <td><span class="file-size-text" th:text="${storedFile.displaySize()}"/></td>
                         <td><a name="delete" href="JavaScript:void(0)" th:data-id="${storedFile.id}">削除</a></td>
                     </tr>
                     </tbody>
