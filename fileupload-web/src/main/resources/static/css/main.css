@@ -18,13 +18,11 @@ img {
     height: auto;
 }
 a {
-    color: #709a00;
+    text-decoration: none;
+    color: #1864b9;
 }
 a:hover {
-    color: #95cd00;
-}
-a:active {
-    color: #4b6700;
+    color: #1864b9;
 }
 .img-responsive {
     display: block;
@@ -108,8 +106,4 @@ section .container {
 }
 .breadcrumb li:last-child::after {
     content: none;
-}
-.breadcrumb a {
-    text-decoration: none;
-    color: #1864b9;
 }
