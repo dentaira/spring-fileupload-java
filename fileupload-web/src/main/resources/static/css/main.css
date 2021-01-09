@@ -129,3 +129,8 @@ section .container {
 .breadcrumb li:last-child::after {
     content: none;
 }
+
+.action-toolbar button {
+    margin-right: 20px;
+    min-height: 40px;
+}
