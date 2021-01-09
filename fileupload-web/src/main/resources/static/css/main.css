@@ -32,6 +32,10 @@ a:active {
     height: auto;
 }
 
+.float-clear {
+    overflow: hidden;
+}
+
 /* 共通の見出し */
 main h1 {
     margin-bottom: 1rem;
@@ -62,13 +66,6 @@ section .container {
 .header-inner {
 }
 
-.sidebar {
-    background-color: lightgray;
-}
-.sidebar ul {
-    list-style-type: none;
-}
-
 .main {
 }
 
@@ -76,7 +73,10 @@ section .container {
     display: none;
 }
 .upload-button {
-    background-color: #95cd00;
+    float: left;
+}
+
+.create-button {
 }
 
 .file-table {

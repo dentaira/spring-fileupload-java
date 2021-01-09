@@ -33,32 +33,20 @@
 </section>
 <section th:with="currentDirId=${currentDir == null}? '' : ${currentDir.id}">
     <div class="container">
-        <aside class="sidebar">
-            <ul>
-                <li>
-                    <form name="uploadForm" th:action="@{'/file/upload/'+${currentDirId}}" enctype="multipart/form-data"
-                          method="POST" th:object="${uploadForm}">
-                        <label for="uploadFile">
-                            ファイルをアップロード
-                        </label>
-                        <input type="file" id="uploadFile" onchange="submitUpload()" th:field="*{uploadFile}">
-                    </form>
-                </li>
-                <li>
-                    フォルダをアップロード
-                </li>
-                <li>
-                    <form name="createDirForm" th:action="@{'/directory/create/'+${currentDirId}}" method="POST">
-                        <label for="createDirName">
-                            フォルダを追加
-                        </label>
-                        <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName"
-                               name="createDirName">
-                    </form>
-                </li>
-            </ul>
-        </aside>
         <main class="main">
+            <div class="action-toolbar float-clear">
+                <form name="uploadForm" th:action="@{'/file/upload/'+${currentDirId}}"
+                      enctype="multipart/form-data"
+                      method="POST" th:object="${uploadForm}">
+                    <button class="upload-button" onclick="clickFile('uploadFile'); return false">ファイルをアップロード</button>
+                    <input type="file" id="uploadFile" onchange="submitUpload()" th:field="*{uploadFile}">
+                </form>
+                <form name="createDirForm" th:action="@{'/directory/create/'+${currentDirId}}" method="POST">
+                    <button onclick="clickFile('createDirName'); return false">フォルダを追加</button>
+                    <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName"
+                           name="createDirName">
+                </form>
+            </div>
             <div>
                 <table class="file-table">
                     <thead>
@@ -118,6 +106,10 @@
         let text = document.getElementById("createDirName");
         text.value = name;
         document.createDirForm.submit();
+    }
+
+    function clickFile(id) {
+        document.getElementById(id).click();
     }
 </script>
 </body>
