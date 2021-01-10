@@ -41,10 +41,11 @@
                       enctype="multipart/form-data"
                       method="POST" th:object="${uploadForm}">
                     <button class="upload-button" onclick="clickFile('uploadFile'); return false">ファイルをアップロード</button>
-                    <input type="file" id="uploadFile" onchange="submitUpload()" th:field="*{uploadFile}">
+                    <input type="file" id="uploadFile" onchange="submitUpload()" th:field="*{uploadFile}"
+                           class="upload-button">
                 </form>
                 <form name="createDirForm" th:action="@{'/directory/create/'+${currentDirId}}" method="POST">
-                    <button onclick="clickFile('createDirName'); return false">フォルダを作成</button>
+                    <button onclick="clickFile('createDirName'); return false" class="create-button">フォルダを作成</button>
                     <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName"
                            name="createDirName">
                 </form>

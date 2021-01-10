@@ -115,7 +115,8 @@ section .container {
 
 /* パンくずリスト */
 .breadcrumb {
-    min-height: 70px;
+    min-height: 80px;
+    margin-bottom: 20px;
 }
 .breadcrumb ol {
     list-style-type: none;
@@ -134,7 +135,26 @@ section .container {
     content: none;
 }
 
+/* アクションツールバー */
 .action-toolbar button {
     margin-right: 20px;
     min-height: 40px;
+}
+.upload-button {
+    border: none;
+    background-color: mediumaquamarine;
+    color: #fff ;
+    outline: none;
+}
+.upload-button:hover, .upload-button:focus, .upload-button:active {
+    background-color: #82cfad;
+}
+.create-button {
+    border: none;
+    background-color: gold;
+    color: #fff;
+    outline: none;
+}
+.create-button:hover, .create-button:focus, .create-button:active {
+    background-color: #ffe14c;
 }
