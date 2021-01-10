@@ -45,22 +45,8 @@ main h1 {
     margin: 0 auto;
     max-width: 1000px;
 }
-section .container {
-    display: flex;
-    flex-flow: column;
-}
 
-@media screen and (min-width: 768px) {
-    section .container {
-        flex-flow: row;
-    }
-    main {
-        flex: 1 1 auto;
-    }
-    .sidebar {
-        flex: 0 0 300px;
-    }
-}
+/* ヘッダー */
 .header-inner {
 }
 .header-logo {
@@ -68,17 +54,36 @@ section .container {
     height: 45px;
 }
 
+/* メイン */
 .main {
 }
 
+/* アクションツールバー */
+.action-toolbar button {
+    margin-right: 20px;
+    min-height: 40px;
+}
 #uploadFile {
     display: none;
 }
 .upload-button {
     float: left;
+    border: none;
+    background-color: mediumaquamarine;
+    color: #fff ;
+    outline: none;
 }
-
+.upload-button:hover, .upload-button:focus, .upload-button:active {
+    background-color: #82cfad;
+}
 .create-button {
+    border: none;
+    background-color: gold;
+    color: #fff;
+    outline: none;
+}
+.create-button:hover, .create-button:focus, .create-button:active {
+    background-color: #ffe14c;
 }
 
 .file-table {
@@ -110,9 +115,6 @@ section .container {
     font-size: 0.9rem;
 }
 
-.footer-inner {
-}
-
 /* パンくずリスト */
 .breadcrumb {
     min-height: 80px;
@@ -135,26 +137,6 @@ section .container {
     content: none;
 }
 
-/* アクションツールバー */
-.action-toolbar button {
-    margin-right: 20px;
-    min-height: 40px;
-}
-.upload-button {
-    border: none;
-    background-color: mediumaquamarine;
-    color: #fff ;
-    outline: none;
-}
-.upload-button:hover, .upload-button:focus, .upload-button:active {
-    background-color: #82cfad;
-}
-.create-button {
-    border: none;
-    background-color: gold;
-    color: #fff;
-    outline: none;
-}
-.create-button:hover, .create-button:focus, .create-button:active {
-    background-color: #ffe14c;
+/* フッター */
+.footer-inner {
 }
