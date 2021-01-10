@@ -67,25 +67,22 @@ main h1 {
     background-position-y: center;
     padding-left: 34px;
     padding-right: 12px;
+    border: none;
+    outline: none;
+    color: #fff;
 }
 #uploadFile {
     display: none;
 }
 .upload-button {
     float: left;
-    border: none;
-    color: #fff;
-    outline: none;
-    background: url("../image/upload.png") no-repeat mediumaquamarine;
+    background: url(../image/upload.png) no-repeat mediumaquamarine;
 }
 .upload-button:hover, .upload-button:focus, .upload-button:active {
     background-color: #82cfad;
 }
 .create-button {
-    border: none;
-    color: #fff;
-    outline: none;
-    background: url("../image/plus.png") no-repeat gold;
+    background: url(../image/plus.png) no-repeat gold;
 }
 .create-button:hover, .create-button:focus, .create-button:active {
     background-color: #ffe14c;
