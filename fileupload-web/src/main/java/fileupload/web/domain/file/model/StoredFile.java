@@ -49,6 +49,10 @@ public class StoredFile {
         return path;
     }
 
+    public FileType getType() {
+        return type;
+    }
+
     public InputStream getContent() {
         return content;
     }

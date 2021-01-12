@@ -4,7 +4,6 @@ html, body {
     font-size: 16px;
     font-family: sans-serif;
     color: #393939;
-    background: #efefef;
 }
 body, div, p, h1, h2, h3, h4, ul, figure {
     margin: 0;
@@ -18,13 +17,11 @@ img {
     height: auto;
 }
 a {
-    color: #709a00;
+    text-decoration: none;
+    color: #1864b9;
 }
 a:hover {
-    color: #95cd00;
-}
-a:active {
-    color: #4b6700;
+    color: #1864b9;
 }
 .img-responsive {
     display: block;
@@ -32,51 +29,56 @@ a:active {
     height: auto;
 }
 
-/* 共通の見出し */
-main h1 {
-    margin-bottom: 1rem;
-    border-bottom: 1px dashed #c84040;
-    font-weight: normal;
-    font-size: 1.6rem;
+.float-clear {
+    overflow: hidden;
 }
+
 .container {
     margin: 0 auto;
     max-width: 1000px;
 }
-section .container {
-    display: flex;
-    flex-flow: column;
-}
 
-@media screen and (min-width: 768px) {
-    section .container {
-        flex-flow: row;
-    }
-    main {
-        flex: 1 1 auto;
-    }
-    .sidebar {
-        flex: 0 0 300px;
-    }
-}
+/* ヘッダー */
 .header-inner {
 }
-
-.sidebar {
-    background-color: lightgray;
-}
-.sidebar ul {
-    list-style-type: none;
+.header-logo {
+    margin: 0;
+    padding: 10px 0;
+    width: 180px;
 }
 
+/* メイン */
 .main {
 }
 
+/* アクションツールバー */
+.action-toolbar button {
+    margin-right: 20px;
+    min-height: 40px;
+    background-size: 20px 20px;
+    background-position-x: 10px;
+    background-position-y: center;
+    padding-left: 34px;
+    padding-right: 12px;
+    border: none;
+    outline: none;
+    color: #fff;
+}
 #uploadFile {
     display: none;
 }
 .upload-button {
-    background-color: #95cd00;
+    float: left;
+    background: url(../image/upload.png) no-repeat mediumaquamarine;
+}
+.upload-button:hover, .upload-button:focus, .upload-button:active {
+    background-color: #82cfad;
+}
+.create-button {
+    background: url(../image/plus.png) no-repeat gold;
+}
+.create-button:hover, .create-button:focus, .create-button:active {
+    background-color: #ffe14c;
 }
 
 .file-table {
@@ -88,18 +90,38 @@ section .container {
 }
 .file-table th, .file-table td {
     border-bottom: 1px lightgray solid;
+    height: 50px;
 }
-
-.footer-inner {
+.file-icon {
+    float: left;
+    margin: auto 15px;
+}
+.file-icon[file-type="FILE"] {
+    content: url(../image/file.png);
+    height: 32px;
+    width: 32px;
+}
+.file-icon[file-type="DIRECTORY"] {
+    content: url(../image/folder.png);
+    height: 32px;
+    width: 32px;
+}
+.file-size-text {
+    font-size: 0.9rem;
 }
 
 /* パンくずリスト */
+.breadcrumb {
+    min-height: 80px;
+    margin-bottom: 20px;
+}
 .breadcrumb ol {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 .breadcrumb li {
+    font-size: 1.4rem;
     display: inline;
 }
 .breadcrumb li::after {
@@ -109,7 +131,7 @@ section .container {
 .breadcrumb li:last-child::after {
     content: none;
 }
-.breadcrumb a {
-    text-decoration: none;
-    color: #1864b9;
+
+/* フッター */
+.footer-inner {
 }
