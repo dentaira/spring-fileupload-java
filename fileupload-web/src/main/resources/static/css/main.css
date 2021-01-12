@@ -34,13 +34,6 @@ a:hover {
     overflow: hidden;
 }
 
-/* 共通の見出し */
-main h1 {
-    margin-bottom: 1rem;
-    border-bottom: 1px dashed #c84040;
-    font-weight: normal;
-    font-size: 1.6rem;
-}
 .container {
     margin: 0 auto;
     max-width: 1000px;
@@ -50,8 +43,9 @@ main h1 {
 .header-inner {
 }
 .header-logo {
+    margin: 0;
+    padding: 10px 0;
     width: 180px;
-    height: 45px;
 }
 
 /* メイン */
