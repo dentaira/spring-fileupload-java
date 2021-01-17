@@ -35,9 +35,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - name: pwd
-      run: pwd
-      working-directory: ./fileupload-web/src/test/resources
     - name: Create Tables
       run: psql -d postgresql://postgres@localhost:15432/fileupload -f schema.sql
       working-directory: ./fileupload-web/src/test/resources
