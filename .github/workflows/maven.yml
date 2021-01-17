@@ -30,6 +30,8 @@ jobs:
           - 15432:5432
 
     steps:
+    - name: pwd
+      run: pwd
     - name: ls
       run: ls -la
     - name: Create Tables
