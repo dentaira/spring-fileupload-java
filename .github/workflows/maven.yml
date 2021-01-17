@@ -21,5 +21,4 @@ jobs:
       with:
         java-version: 11
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
-      working-directory: ./fileupload-web
+      run: mvn -B package --file ./fileupload-web/pom.xml
