@@ -36,8 +36,8 @@ jobs:
       with:
         java-version: 11
     - name: Build with Maven
-      run: mvn -B package --file ./fileupload-web/pom.xml
+      run: mvn -P ci -B package --file ./fileupload-web/pom.xml
       env: 
-        SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
-        SPRING_DATASORUCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_URL: ${{ secrets.DB_URL }}
