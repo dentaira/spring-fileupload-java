@@ -30,13 +30,16 @@ jobs:
           - 15432:5432
 
     steps:
+    - name: Create Tables
+      run: psql -d postgresql://postgres@localhost/fileupload -f schema.sql
+      working-directory: ./fileupload-web/src/test/resources
     - uses: actions/checkout@v2
     - name: Set up JDK 11
       uses: actions/setup-java@v1
       with:
         java-version: 11
     - name: Build with Maven
-      run: mvn -P ci -B package --file ./fileupload-web/pom.xml
+      run: mvn -B package --file ./fileupload-web/pom.xml
       env: 
         DB_USERNAME: ${{ secrets.DB_USERNAME }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
