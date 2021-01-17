@@ -95,7 +95,36 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <spring.datasource.username>${env.DB_USERNAME}</spring.datasource.username>
+                        <spring.datasource.password>${env.DB_PASSWORD}</spring.datasource.password>
+                        <spring.datasource.url>${env.DB_URL}</spring.datasource.url>
+                        <spring.datasource.initialization-mode>${spring.datasource.initialization-mode}</spring.datasource.initialization-mode>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.datasource.initialization-mode>never</spring.datasource.initialization-mode>
+            </properties>
+        </profile>
+        <profile>
+            <id>ci</id>
+            <properties>
+                <spring.datasource.initialization-mode>always</spring.datasource.initialization-mode>
+            </properties>
+        </profile>
+    </profiles>
 </project>
