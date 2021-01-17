@@ -36,7 +36,7 @@ jobs:
       with:
         java-version: 11
     - name: Create Tables
-      run: psql -d postgresql://postgres@localhost/fileupload -f schema.sql
+      run: psql -d postgresql://postgres@localhost:15432/fileupload -f schema.sql
       working-directory: ./fileupload-web/src/test/resources
     - name: Build with Maven
       run: mvn -B package --file ./fileupload-web/pom.xml
