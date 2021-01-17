@@ -38,6 +38,8 @@ jobs:
     - name: Create Tables
       run: psql -d postgresql://postgres@localhost:15432/fileupload -f schema.sql
       working-directory: ./fileupload-web/src/test/resources
+      env:
+        PGPASSWORD: ${{ secrets.DB_PASSWORD }}
     - name: Build with Maven
       run: mvn -B package --file ./fileupload-web/pom.xml
       env: 
