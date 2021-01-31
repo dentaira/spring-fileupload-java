@@ -33,7 +33,7 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> search() {
+    public List<StoredFile> searchRoot() {
         return jdbcTemplate.query(
                 "SELECT id, name, path, type, size FROM FILE WHERE cast(id as text) = replace(path, '/', '')"
                 , (rs, rowNum) -> {

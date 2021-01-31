@@ -34,7 +34,7 @@ public class UploadController {
 
     @GetMapping("home")
     public String home(UploadForm form, Model model) {
-        List<StoredFile> files = fileService.search();
+        List<StoredFile> files = fileService.searchRoot();
         form.setStoredFiles(files);
         model.addAttribute("ancestors", Directories.empty());
         return "file-list";

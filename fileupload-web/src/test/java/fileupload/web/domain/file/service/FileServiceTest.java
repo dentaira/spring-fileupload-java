@@ -1,12 +1,12 @@
 package fileupload.web.domain.file.service;
 
-import com.github.springtestdbunit.annotation.DatabaseSetup;
-import com.github.springtestdbunit.annotation.ExpectedDatabase;
-import com.github.springtestdbunit.assertion.DatabaseAssertionMode;
+import com.github.database.rider.core.api.dataset.DataSet;
+import com.github.database.rider.core.api.dataset.ExpectedDataSet;
 import fileupload.web.domain.file.model.Directories;
 import fileupload.web.domain.file.model.StoredFile;
-import fileupload.web.test.infra.dbunit.annotation.DbUnitTest;
+import fileupload.web.test.annotation.DatabaseRiderTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
-@DbUnitTest
+@DatabaseRiderTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class FileServiceTest {
 
@@ -31,39 +31,70 @@ class FileServiceTest {
 
     @Nested
     @JdbcTest
-    @DbUnitTest
+    @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    class searchは指定したパス配下のファイルを取得する {
+    @DisplayName("searchRootはRoot配下のFileを取得する")
+    class SearchRootTest {
 
         @BeforeEach
-        public void setUp() {
+        void setUp() {
             sut = new FileService(jdbcTemplate);
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.search.xml")
-        void 引数なしの場合はroot配下のファイルを返す() {
-            List<StoredFile> actual = sut.search();
+        @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/SearchRootTest/setup-testFindOne.yml")
+        @DisplayName("Root配下のFileが1つの場合は1つ取得する")
+        void testFindOne() {
+            List<StoredFile> actual = sut.searchRoot();
+            assertEquals(1, actual.size());
+        }
+
+        @Test
+        @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/SearchRootTest/setup-testFineThree.yml")
+        @DisplayName("Root配下のFileが3つの場合は3つ取得する")
+        void testFindThree() {
+            List<StoredFile> actual = sut.searchRoot();
+            assertEquals(3, actual.size());
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/SearchTest/setup-search.yml")
+    @DisplayName("searchは指定したFolder直下にあるFileを取得する")
+    class SearchTest {
+
+        @BeforeEach
+        void setUp() {
+            sut = new FileService(jdbcTemplate);
+        }
+
+        @Test
+        @DisplayName("指定したFolder配下のFileが1つの場合は1つ取得する")
+        void testFindOne() {
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13");
+            assertEquals(1, actual.size());
+        }
+
+        @Test
+        @DisplayName("指定したFolder配下のFileが1つの場合は1つ取得する")
+        void testFindThree() {
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
             assertEquals(3, actual.size());
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.search.xml")
-        void 引数にフォルダIDを渡した場合は配下のファイルを返す() {
-            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
-            assertEquals(2, actual.size());
-        }
-
-        @Test
-        @DatabaseSetup("FileServiceTest.search.xml")
-        void 引数にフォルダIDを渡して配下にファイルが存在しない場合は空のリストを返す() {
+        @DisplayName("指定したFolder配下にFileが存在しない場合は空のListを返す")
+        void testFindZero() {
             List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12");
             assertEquals(0, actual.size());
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.search.xml")
-        void 引数にファイルIDを渡した場合は例外が発生する() {
+        @DisplayName("指定したFileのtypeがFileだった場合は例外が発生する")
+        void testSearchFile() {
             List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
             assertEquals(0, actual.size());
         }
@@ -71,29 +102,29 @@ class FileServiceTest {
 
     @Nested
     @JdbcTest
-    @DbUnitTest
+    @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    class deleteメソッドはファイルを削除する {
+    @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/DeleteTest/setup-delete.yml")
+    @DisplayName("deleteメソッドはファイルを削除する")
+    class DeleteTest {
 
         @BeforeEach
-        public void setUp() {
+        void setUp() {
             sut = new FileService(jdbcTemplate);
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.delete.xml")
-        @ExpectedDatabase(value = "expected-引数にファイルのIDを渡した場合は指定したファイルのみを削除する.xml"
-                , assertionMode = DatabaseAssertionMode.NON_STRICT_UNORDERED)
-        void 引数にファイルのIDを渡した場合は指定したファイルを削除する() {
+        @ExpectedDataSet("fileupload/web/domain/file/service/FileServiceTest-data/DeleteTest/expected-testDeleteFile.yml")
+        @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
+        void testDeleteFile() {
             int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
             assertEquals(1, count);
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.delete.xml")
-        @ExpectedDatabase(value = "expected-引数にフォルダのIDを渡した場合は指定したフォルダおよび配下のファイルとフォルダを全て削除する.xml"
-                , assertionMode = DatabaseAssertionMode.NON_STRICT_UNORDERED)
-        void 引数にフォルダのIDを渡した場合は指定したフォルダおよび配下のファイルとフォルダを全て削除する() {
+        @ExpectedDataSet("fileupload/web/domain/file/service/FileServiceTest-data/DeleteTest/expected-testDeleteFolder.yml")
+        @DisplayName("削除するFileのtypeがFolderの場合は指定したFileと配下のFile全てを削除する")
+        void testDeleteFolder() {
             int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
             assertEquals(3, count);
         }
@@ -101,17 +132,18 @@ class FileServiceTest {
 
     @Nested
     @JdbcTest
-    @DbUnitTest
+    @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    class findAncestorsは祖先フォルダ全てのListを返す {
+    @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/FindAncestorsTest/setup-findAncestors.yml")
+    @DisplayName("findAncestorsは祖先フォルダ全てのListを返す")
+    class FindAncestorsTest {
 
         @BeforeEach
-        public void setUp() {
+        void setUp() {
             sut = new FileService(jdbcTemplate);
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.findAncestors.xml")
         void idで指定したファイルの祖先パスを返す() {
             var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13";
             Directories actual = sut.findAncestors(param);
@@ -122,7 +154,6 @@ class FileServiceTest {
         }
 
         @Test
-        @DatabaseSetup("FileServiceTest.findAncestors.xml")
         void root直下のファイルの場合は空のリストを返す() {
             var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11";
             Directories actual = sut.findAncestors(param);
