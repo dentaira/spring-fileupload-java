@@ -26,7 +26,7 @@ public class DirectoryService {
     public void create(String name, Path parentPath) {
 
         jdbcTemplate.update(
-                "INSERT INTO FILE(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
+                "INSERT INTO file(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
                 , (ps) -> {
                     var id = UUID.randomUUID().toString();
                     ps.setString(1, id);
