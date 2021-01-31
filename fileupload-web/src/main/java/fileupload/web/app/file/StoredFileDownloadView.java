@@ -1,6 +1,6 @@
-package fileupload.web.app.file.view;
+package fileupload.web.app.file;
 
-import fileupload.web.domain.file.model.StoredFile;
+import fileupload.web.domain.file.StoredFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.AbstractView;
 

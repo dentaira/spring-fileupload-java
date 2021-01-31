@@ -1,6 +1,6 @@
-package fileupload.web.domain.file.service;
+package fileupload.web.domain.file;
 
-import fileupload.web.domain.file.model.FileType;
+import fileupload.web.domain.file.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +26,7 @@ public class DirectoryService {
     public void create(String name, Path parentPath) {
 
         jdbcTemplate.update(
-                "INSERT INTO FILE(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
+                "INSERT INTO file(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
                 , (ps) -> {
                     var id = UUID.randomUUID().toString();
                     ps.setString(1, id);

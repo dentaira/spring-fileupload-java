@@ -1,8 +1,8 @@
-package fileupload.web.domain.file.service;
+package fileupload.web.domain.file;
 
-import fileupload.web.domain.file.model.Directories;
-import fileupload.web.domain.file.model.FileType;
-import fileupload.web.domain.file.model.StoredFile;
+import fileupload.web.domain.file.Directories;
+import fileupload.web.domain.file.FileType;
+import fileupload.web.domain.file.StoredFile;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +33,9 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> search() {
+    public List<StoredFile> searchRoot() {
         return jdbcTemplate.query(
-                "SELECT id, name, path, type, size FROM FILE WHERE cast(id as text) = replace(path, '/', '')"
+                "SELECT id, name, path, type, size FROM file WHERE cast(id as text) = replace(path, '/', '')"
                 , (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -48,13 +48,13 @@ public class FileService {
     @Transactional(readOnly = true)
     public List<StoredFile> search(String dirId) {
         int level = jdbcTemplate.queryForObject(
-                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM FILE WHERE id = ?"
+                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM file WHERE id = ?"
                 , new Object[]{dirId}
                 , Integer.class);
 
         return jdbcTemplate.query(
-                "SELECT id, name, path, type, size FROM FILE"
-                        + " WHERE path LIKE (SELECT path FROM FILE WHERE id = ?) || '_%'"
+                "SELECT id, name, path, type, size FROM file"
+                        + " WHERE path LIKE (SELECT path FROM file WHERE id = ?) || '_%'"
                         + " AND LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = (? + 1)"
                 , (ps) -> {
                     ps.setString(1, dirId);
@@ -76,7 +76,7 @@ public class FileService {
         try (InputStream in = multipartFile.getInputStream()) {
             var id = UUID.randomUUID().toString();
             int result = jdbcTemplate.update(
-                    "INSERT INTO FILE(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
                     , (ps) -> {
                         ps.setString(1, id);
                         ps.setString(2, multipartFile.getOriginalFilename());
@@ -95,7 +95,7 @@ public class FileService {
     @Transactional(readOnly = true)
     public StoredFile findById(String downloadId) {
         return (StoredFile) jdbcTemplate.query(
-                "SELECT id, name, path, type, content, size FROM FILE WHERE id = ?"
+                "SELECT id, name, path, type, content, size FROM file WHERE id = ?"
                 , (rs) -> {
                     rs.next();
                     return new StoredFile(UUID.fromString(rs.getString("id"))
@@ -110,7 +110,7 @@ public class FileService {
     @Transactional(readOnly = true)
     public Path findPathById(String id) {
         return jdbcTemplate.query(
-                "SELECT path FROM FILE WHERE id = ?"
+                "SELECT path FROM file WHERE id = ?"
                 , rs -> {
                     rs.next();
                     return Path.of(rs.getString("path"));
@@ -120,12 +120,12 @@ public class FileService {
 
     @Transactional(rollbackFor = Exception.class)
     public int delete(String fileId) {
-        FileType type = jdbcTemplate.queryForObject("SELECT type FROM FILE WHERE id = ?", FileType.class, fileId);
+        FileType type = jdbcTemplate.queryForObject("SELECT type FROM file WHERE id = ?", FileType.class, fileId);
         if (type == FileType.FILE) {
-            return jdbcTemplate.update("DELETE FROM FILE WHERE id = ?", fileId);
+            return jdbcTemplate.update("DELETE FROM file WHERE id = ?", fileId);
         } else {
             Path path = findPathById(fileId);
-            return jdbcTemplate.update("DELETE FROM FILE WHERE path LIKE ? || '%'", path.toString() + "/");
+            return jdbcTemplate.update("DELETE FROM file WHERE path LIKE ? || '%'", path.toString() + "/");
         }
     }
 

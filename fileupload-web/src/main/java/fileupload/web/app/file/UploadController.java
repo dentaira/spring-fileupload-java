@@ -1,9 +1,8 @@
-package fileupload.web.app.file.controller;
+package fileupload.web.app.file;
 
-import fileupload.web.app.file.form.UploadForm;
-import fileupload.web.domain.file.model.Directories;
-import fileupload.web.domain.file.model.StoredFile;
-import fileupload.web.domain.file.service.FileService;
+import fileupload.web.domain.file.Directories;
+import fileupload.web.domain.file.StoredFile;
+import fileupload.web.domain.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -34,7 +33,7 @@ public class UploadController {
 
     @GetMapping("home")
     public String home(UploadForm form, Model model) {
-        List<StoredFile> files = fileService.search();
+        List<StoredFile> files = fileService.searchRoot();
         form.setStoredFiles(files);
         model.addAttribute("ancestors", Directories.empty());
         return "file-list";
