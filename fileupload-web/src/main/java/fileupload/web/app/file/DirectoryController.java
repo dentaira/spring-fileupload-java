@@ -1,4 +1,4 @@
-package fileupload.web.app.file.controller;
+package fileupload.web.app.file;
 
 import fileupload.web.domain.file.DirectoryService;
 import fileupload.web.domain.file.FileService;

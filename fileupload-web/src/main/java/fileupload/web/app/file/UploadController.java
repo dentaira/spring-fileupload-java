@@ -1,6 +1,5 @@
-package fileupload.web.app.file.controller;
+package fileupload.web.app.file;
 
-import fileupload.web.app.file.form.UploadForm;
 import fileupload.web.domain.file.Directories;
 import fileupload.web.domain.file.StoredFile;
 import fileupload.web.domain.file.FileService;

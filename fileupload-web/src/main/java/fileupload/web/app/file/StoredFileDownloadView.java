@@ -1,4 +1,4 @@
-package fileupload.web.app.file.view;
+package fileupload.web.app.file;
 
 import fileupload.web.domain.file.StoredFile;
 import org.springframework.stereotype.Component;
