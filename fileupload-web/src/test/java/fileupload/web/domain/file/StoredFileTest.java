@@ -1,5 +1,7 @@
-package fileupload.web.domain.file.model;
+package fileupload.web.domain.file;
 
+import fileupload.web.domain.file.FileType;
+import fileupload.web.domain.file.StoredFile;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

@@ -1,6 +1,6 @@
 package fileupload.web.app.file.form;
 
-import fileupload.web.domain.file.model.StoredFile;
+import fileupload.web.domain.file.StoredFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.Serializable;

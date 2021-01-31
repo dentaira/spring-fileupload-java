@@ -1,9 +1,9 @@
 package fileupload.web.app.file.controller;
 
 import fileupload.web.app.file.form.UploadForm;
-import fileupload.web.domain.file.model.Directories;
-import fileupload.web.domain.file.model.StoredFile;
-import fileupload.web.domain.file.service.FileService;
+import fileupload.web.domain.file.Directories;
+import fileupload.web.domain.file.StoredFile;
+import fileupload.web.domain.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;

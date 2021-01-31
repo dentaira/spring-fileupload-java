@@ -1,6 +1,6 @@
-package fileupload.web.domain.file.service;
+package fileupload.web.domain.file;
 
-import fileupload.web.domain.file.model.FileType;
+import fileupload.web.domain.file.FileType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;

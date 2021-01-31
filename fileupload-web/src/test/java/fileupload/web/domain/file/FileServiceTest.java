@@ -1,9 +1,7 @@
-package fileupload.web.domain.file.service;
+package fileupload.web.domain.file;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import fileupload.web.domain.file.model.Directories;
-import fileupload.web.domain.file.model.StoredFile;
 import fileupload.web.test.annotation.DatabaseRiderTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +40,7 @@ class FileServiceTest {
         }
 
         @Test
-        @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/SearchRootTest/setup-testFindOne.yml")
+        @DataSet("fileupload/web/domain/file/FileServiceTest-data/SearchRootTest/setup-testFindOne.yml")
         @DisplayName("Root配下のFileが1つの場合は1つ取得する")
         void testFindOne() {
             List<StoredFile> actual = sut.searchRoot();
@@ -50,7 +48,7 @@ class FileServiceTest {
         }
 
         @Test
-        @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/SearchRootTest/setup-testFineThree.yml")
+        @DataSet("fileupload/web/domain/file/FileServiceTest-data/SearchRootTest/setup-testFineThree.yml")
         @DisplayName("Root配下のFileが3つの場合は3つ取得する")
         void testFindThree() {
             List<StoredFile> actual = sut.searchRoot();
@@ -62,7 +60,7 @@ class FileServiceTest {
     @JdbcTest
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/SearchTest/setup-search.yml")
+    @DataSet("fileupload/web/domain/file/FileServiceTest-data/SearchTest/setup-search.yml")
     @DisplayName("searchは指定したFolder直下にあるFileを取得する")
     class SearchTest {
 
@@ -104,7 +102,7 @@ class FileServiceTest {
     @JdbcTest
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/DeleteTest/setup-delete.yml")
+    @DataSet("fileupload/web/domain/file/FileServiceTest-data/DeleteTest/setup-delete.yml")
     @DisplayName("deleteメソッドはファイルを削除する")
     class DeleteTest {
 
@@ -114,7 +112,7 @@ class FileServiceTest {
         }
 
         @Test
-        @ExpectedDataSet("fileupload/web/domain/file/service/FileServiceTest-data/DeleteTest/expected-testDeleteFile.yml")
+        @ExpectedDataSet("fileupload/web/domain/file/FileServiceTest-data/DeleteTest/expected-testDeleteFile.yml")
         @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
         void testDeleteFile() {
             int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
@@ -122,7 +120,7 @@ class FileServiceTest {
         }
 
         @Test
-        @ExpectedDataSet("fileupload/web/domain/file/service/FileServiceTest-data/DeleteTest/expected-testDeleteFolder.yml")
+        @ExpectedDataSet("fileupload/web/domain/file/FileServiceTest-data/DeleteTest/expected-testDeleteFolder.yml")
         @DisplayName("削除するFileのtypeがFolderの場合は指定したFileと配下のFile全てを削除する")
         void testDeleteFolder() {
             int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
@@ -134,7 +132,7 @@ class FileServiceTest {
     @JdbcTest
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    @DataSet("fileupload/web/domain/file/service/FileServiceTest-data/FindAncestorsTest/setup-findAncestors.yml")
+    @DataSet("fileupload/web/domain/file/FileServiceTest-data/FindAncestorsTest/setup-findAncestors.yml")
     @DisplayName("findAncestorsは祖先フォルダ全てのListを返す")
     class FindAncestorsTest {
 
