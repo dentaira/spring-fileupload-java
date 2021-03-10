@@ -10,3 +10,10 @@ CREATE TABLE IF NOT EXISTS file (
     content BYTEA,
     size BIGINT
 );
+
+CREATE TABLE IF NOT EXISTS user_account (
+    email VARCHAR(254),
+    name VARCHAR(64),
+    password VARCHAR(256),
+    role VARCHAR(20)
+)
