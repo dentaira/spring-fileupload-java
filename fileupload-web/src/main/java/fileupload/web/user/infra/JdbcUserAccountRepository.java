@@ -20,13 +20,16 @@ public class JdbcUserAccountRepository implements UserAccountRepository {
                 "SELECT email, name, password, role FROM user_account WHERE email = ?",
                 pss -> pss.setString(1, email),
                 rs -> {
-                    rs.next();
-                    return new UserAccount(
-                            rs.getString("email"),
-                            rs.getString("name"),
-                            rs.getString("password"),
-                            rs.getString("role")
-                    );
+                    if (rs.next()) {
+                        return new UserAccount(
+                                rs.getString("email"),
+                                rs.getString("name"),
+                                rs.getString("password"),
+                                rs.getString("role")
+                        );
+                    } else {
+                        return null;
+                    }
                 }
         );
     }
