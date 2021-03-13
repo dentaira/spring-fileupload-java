@@ -1,6 +1,10 @@
 package fileupload.web.user;
 
+import java.util.UUID;
+
 public class UserAccount {
+
+    private UUID id;
 
     private String email;
 
@@ -10,7 +14,8 @@ public class UserAccount {
 
     private String role;
 
-    public UserAccount(String email, String name, String password, String role) {
+    public UserAccount(UUID id, String email, String name, String password, String role) {
+        this.id = id;
         this.email = email;
         this.name = name;
         this.password = password;

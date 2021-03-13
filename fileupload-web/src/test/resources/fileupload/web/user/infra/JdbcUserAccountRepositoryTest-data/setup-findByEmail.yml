@@ -1,13 +1,16 @@
 user_account:
-  - email:    wolverine@marvel
+  - id:       07c91478-e1ee-4b00-a436-f427ecb2d4f1
+    email:    wolverine@marvel
     name:     Wolverine
     password: password01
     role:     USER
-  - email:    ironman@marvel
+  - id:       07c91478-e1ee-4b00-a436-f427ecb2d4f2
+    email:    ironman@marvel
     name:     Ironman
     password: password02
     role:     ADMIN
-  - email:    hulk@marvel
+  - id:       07c91478-e1ee-4b00-a436-f427ecb2d4f3
+    email:    hulk@marvel
     name:     Hulk
     password: password03
     role:     USER
