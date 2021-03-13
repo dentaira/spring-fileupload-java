@@ -1,0 +1,13 @@
+user_account:
+  - email:    wolverine@marvel
+    name:     Wolverine
+    password: password01
+    role:     USER
+  - email:    ironman@marvel
+    name:     Ironman
+    password: password02
+    role:     ADMIN
+  - email:    hulk@marvel
+    name:     Hulk
+    password: password03
+    role:     USER
