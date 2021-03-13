@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS file (
 );
 
 CREATE TABLE IF NOT EXISTS user_account (
-    email VARCHAR(254),
+    email VARCHAR(254) PRIMARY KEY,
     name VARCHAR(64),
     password VARCHAR(256),
     role VARCHAR(20)
