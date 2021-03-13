@@ -37,7 +37,7 @@ jobs:
         java-version: 11
     - name: Create Tables
       run: psql -d postgresql://postgres@localhost:15432/fileupload -f schema.sql
-      working-directory: ./fileupload-web/docker
+      working-directory: ./fileupload-web/src/test/resources
       env:
         PGPASSWORD: ${{ secrets.DB_PASSWORD }}
     - name: Build with Maven
