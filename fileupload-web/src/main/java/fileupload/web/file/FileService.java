@@ -116,6 +116,20 @@ public class FileService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    public void createDirectory(String name, Path parentPath) {
+        jdbcTemplate.update(
+                "INSERT INTO file(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
+                , (ps) -> {
+                    var id = UUID.randomUUID().toString();
+                    ps.setString(1, id);
+                    ps.setString(2, name);
+                    ps.setLong(3, 0L);
+                    ps.setString(4, parentPath.resolve(id).toString() + "/");
+                    ps.setObject(5, FileType.DIRECTORY, Types.OTHER);
+                });
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     public int delete(String fileId) {
         FileType type = jdbcTemplate.queryForObject("SELECT type FROM file WHERE id = ?", FileType.class, fileId);
         if (type == FileType.FILE) {

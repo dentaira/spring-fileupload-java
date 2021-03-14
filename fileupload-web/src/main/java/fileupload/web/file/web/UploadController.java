@@ -73,6 +73,18 @@ public class UploadController {
         return "redirect:/file/home/" + currentDir.orElse("");
     }
 
+    @PostMapping({"create/directory", "create/directory/{currentDir}"})
+    public String createDirectory(@RequestParam("createDirName") String createDirName, @PathVariable Optional<String> currentDir) {
+        Path parentPath = null;
+        if (currentDir.isPresent()) {
+            parentPath = fileService.findPathById(currentDir.get());
+        } else {
+            parentPath = Path.of("/");
+        }
+        fileService.createDirectory(createDirName, parentPath);
+        return "redirect:/file/home/" + currentDir.orElse("");
+    }
+
     @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
     public String delete(@PathVariable String fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
         fileService.delete(fileId);
