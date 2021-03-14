@@ -78,6 +78,67 @@ class JdbcFileRepositoryTest {
     @JdbcTest
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchTest/setup-search.yml")
+    @DisplayName("search(String,UserAccount)はUserAccountが所有する指定したFolder直下にあるFileを取得する")
+    class SearchTest {
+
+        @Test
+        @DisplayName("指定したFolder配下のFileが1つの場合は1つ取得する")
+        void testFindOne() {
+            UserAccount user = new UserAccount(
+                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
+                    "email",
+                    "name",
+                    "password",
+                    "role");
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13", user);
+            assertEquals(1, actual.size());
+        }
+
+        @Test
+        @DisplayName("指定したFolder配下のFileが3つの場合は3つ取得する")
+        void testFindThree() {
+            UserAccount user = new UserAccount(
+                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"),
+                    "email",
+                    "name",
+                    "password",
+                    "role");
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11", user);
+            assertEquals(3, actual.size());
+        }
+
+        @Test
+        @DisplayName("指定したFolder配下にFileが存在しない場合は空のListを返す")
+        void testFindZero() {
+            UserAccount user = new UserAccount(
+                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
+                    "email",
+                    "name",
+                    "password",
+                    "role");
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12", user);
+            assertEquals(0, actual.size());
+        }
+
+        @Test
+        @DisplayName("指定したFileのtypeがFileだった場合は例外が発生する")
+        void testSearchFile() {
+            UserAccount user = new UserAccount(
+                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
+                    "email",
+                    "name",
+                    "password",
+                    "role");
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12", user);
+            assertEquals(0, actual.size());
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SaveTest/setup-save.yml")
     @DisplayName("saveはStoredFileを登録する")
     class SaveTest {

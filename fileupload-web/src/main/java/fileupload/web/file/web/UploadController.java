@@ -42,8 +42,10 @@ public class UploadController {
     }
 
     @GetMapping("home/{fileId}")
-    public String home(UploadForm form, @PathVariable String fileId, Model model) {
-        List<StoredFile> files = fileService.search(fileId);
+    public String home(UploadForm form, @PathVariable String fileId,
+                       @AuthenticationPrincipal AccountUserDetails user,
+                       Model model) {
+        List<StoredFile> files = fileService.search(fileId, user.getAccount());
         form.setStoredFiles(files);
 
         StoredFile currentDir = fileService.findById(fileId);

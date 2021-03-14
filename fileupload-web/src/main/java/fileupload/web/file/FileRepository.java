@@ -8,5 +8,7 @@ public interface FileRepository {
 
     public List<StoredFile> searchRoot(UserAccount user);
 
+    public List<StoredFile> search(String parentDirId, UserAccount user);
+
     public void save(StoredFile file);
 }

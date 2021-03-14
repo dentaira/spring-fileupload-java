@@ -39,6 +39,38 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
+    public List<StoredFile> search(String parentDirId, UserAccount user) {
+
+        // TODO levelを使わない方法にリファクタリングする。
+        int level = getLevel(parentDirId);
+
+        return jdbcTemplate.query(
+                "SELECT id, name, path, type, size FROM file"
+                        + " WHERE path LIKE (SELECT path FROM file WHERE id = ?) || '_%'"
+                        + " AND LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = (? + 1)"
+                        + " AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)"
+                , (ps) -> {
+                    ps.setString(1, parentDirId);
+                    ps.setInt(2, level);
+                    ps.setObject(3, user.getId());
+                }
+                , (rs, rowNum) -> {
+                    return new StoredFile(UUID.fromString(rs.getString("id"))
+                            , rs.getString("name")
+                            , Path.of(rs.getString("path"))
+                            , FileType.valueOf(rs.getString("type"))
+                            , rs.getLong("size"));
+                });
+    }
+
+    private int getLevel(String parentDirId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM file WHERE id = ?"
+                , new Object[]{parentDirId}
+                , int.class);
+    }
+
+    @Override
     public void save(StoredFile file) {
         jdbcTemplate.update(
                 "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
