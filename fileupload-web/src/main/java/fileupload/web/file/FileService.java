@@ -141,13 +141,13 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public Directories findAncestors(String id) {
+    public List<StoredFile> findAncestors(String id) {
 
         // パスを取得
         Path path = findPathById(id);
 
         if (path.getParent().equals(ROOT_PATH)) {
-            return new Directories(Collections.emptyList());
+            return Collections.emptyList();
         }
 
         // パラメータとプレースホルダーを作成
@@ -166,7 +166,7 @@ public class FileService {
         sql.append("ORDER BY char_length(path)");
 
         // SQL実行
-        List<StoredFile> ancestors = jdbcTemplate.query(sql.toString(),
+        return jdbcTemplate.query(sql.toString(),
                 (ps) -> {
                     for (int i = 0; i < params.size(); i++) {
                         ps.setString(i + 1, params.get(i));
@@ -181,8 +181,6 @@ public class FileService {
                             rs.getLong("size")
                     );
                 });
-
-        return new Directories(ancestors);
     }
 }
 

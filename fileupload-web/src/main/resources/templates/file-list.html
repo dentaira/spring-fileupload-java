@@ -25,7 +25,7 @@
                 <li>
                     <a th:href="@{/file/home}">home</a>
                 </li>
-                <li th:each="dir : ${ancestors.value()}">
+                <li th:each="dir : ${ancestors}">
                     <a th:href="@{'/file/home/'+${dir.id}}" th:text="${dir.name}"></a>
                 </li>
                 <li th:if="${currentDir != null}">

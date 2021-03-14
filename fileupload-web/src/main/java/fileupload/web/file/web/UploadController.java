@@ -1,8 +1,7 @@
 package fileupload.web.file.web;
 
-import fileupload.web.file.Directories;
-import fileupload.web.file.StoredFile;
 import fileupload.web.file.FileService;
+import fileupload.web.file.StoredFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +35,7 @@ public class UploadController {
     public String home(UploadForm form, Model model) {
         List<StoredFile> files = fileService.searchRoot();
         form.setStoredFiles(files);
-        model.addAttribute("ancestors", Directories.empty());
+        model.addAttribute("ancestors", Collections.<StoredFile>emptyList());
         return "file-list";
     }
 
@@ -47,7 +47,7 @@ public class UploadController {
         StoredFile currentDir = fileService.findById(fileId);
         model.addAttribute("currentDir", currentDir);
 
-        Directories ancestors = fileService.findAncestors(fileId);
+        List<StoredFile> ancestors = fileService.findAncestors(fileId);
         model.addAttribute("ancestors", ancestors);
 
         return "file-list";
