@@ -22,10 +22,13 @@ public class FileService {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    final FileRepository fileRepository;
+
     // TODO Repositoryを作成する
     final JdbcTemplate jdbcTemplate;
 
-    public FileService(JdbcTemplate jdbcTemplate) {
+    public FileService(FileRepository fileRepository, JdbcTemplate jdbcTemplate) {
+        this.fileRepository = fileRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -71,18 +74,17 @@ public class FileService {
         // TODO MultipartFileに依存しないようにする
 
         try (InputStream in = multipartFile.getInputStream()) {
-            var id = UUID.randomUUID().toString();
-            int result = jdbcTemplate.update(
-                    "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
-                    , (ps) -> {
-                        ps.setString(1, id);
-                        ps.setString(2, multipartFile.getOriginalFilename());
-                        ps.setBinaryStream(3, in);
-                        ps.setLong(4, multipartFile.getSize());
-                        ps.setString(5, parentPath.resolve(id).toString() + "/");
-                        ps.setObject(6, FileType.FILE, Types.OTHER);
-                    });
-            logger.info(String.valueOf(result));
+            var fileId = UUID.randomUUID();
+
+            var file = new StoredFile(
+                    fileId,
+                    multipartFile.getOriginalFilename(),
+                    parentPath.resolve(fileId.toString()),
+                    FileType.FILE,
+                    in,
+                    multipartFile.getSize()
+            );
+            fileRepository.save(file);
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);

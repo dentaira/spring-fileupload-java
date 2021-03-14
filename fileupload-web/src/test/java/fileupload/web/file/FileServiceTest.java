@@ -2,6 +2,7 @@ package fileupload.web.file;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
+import fileupload.web.file.infra.JdbcFileRepository;
 import fileupload.web.test.annotation.DatabaseRiderTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,17 +28,17 @@ class FileServiceTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    @BeforeEach
+    void setUp() {
+        sut = new FileService(new JdbcFileRepository(jdbcTemplate), jdbcTemplate);
+    }
+
     @Nested
     @JdbcTest
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DisplayName("searchRootはRoot配下のFileを取得する")
     class SearchRootTest {
-
-        @BeforeEach
-        void setUp() {
-            sut = new FileService(jdbcTemplate);
-        }
 
         @Test
         @DataSet("fileupload/web/file/FileServiceTest-data/SearchRootTest/setup-testFindOne.yml")
@@ -63,11 +64,6 @@ class FileServiceTest {
     @DataSet("fileupload/web/file/FileServiceTest-data/SearchTest/setup-search.yml")
     @DisplayName("searchは指定したFolder直下にあるFileを取得する")
     class SearchTest {
-
-        @BeforeEach
-        void setUp() {
-            sut = new FileService(jdbcTemplate);
-        }
 
         @Test
         @DisplayName("指定したFolder配下のFileが1つの場合は1つ取得する")
@@ -106,11 +102,6 @@ class FileServiceTest {
     @DisplayName("deleteメソッドはファイルを削除する")
     class DeleteTest {
 
-        @BeforeEach
-        void setUp() {
-            sut = new FileService(jdbcTemplate);
-        }
-
         @Test
         @ExpectedDataSet("fileupload/web/file/FileServiceTest-data/DeleteTest/expected-testDeleteFile.yml")
         @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
@@ -135,11 +126,6 @@ class FileServiceTest {
     @DataSet("fileupload/web/file/FileServiceTest-data/FindAncestorsTest/setup-findAncestors.yml")
     @DisplayName("findAncestorsは祖先フォルダ全てのListを返す")
     class FindAncestorsTest {
-
-        @BeforeEach
-        void setUp() {
-            sut = new FileService(jdbcTemplate);
-        }
 
         @Test
         void idで指定したファイルの祖先パスを返す() {
