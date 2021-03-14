@@ -41,30 +41,6 @@ class FileServiceTest {
     @JdbcTest
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-    @DisplayName("searchRootはRoot配下のFileを取得する")
-    class SearchRootTest {
-
-        @Test
-        @DataSet("fileupload/web/file/FileServiceTest-data/SearchRootTest/setup-testFindOne.yml")
-        @DisplayName("Root配下のFileが1つの場合は1つ取得する")
-        void testFindOne() {
-            List<StoredFile> actual = sut.searchRoot();
-            assertEquals(1, actual.size());
-        }
-
-        @Test
-        @DataSet("fileupload/web/file/FileServiceTest-data/SearchRootTest/setup-testFineThree.yml")
-        @DisplayName("Root配下のFileが3つの場合は3つ取得する")
-        void testFindThree() {
-            List<StoredFile> actual = sut.searchRoot();
-            assertEquals(3, actual.size());
-        }
-    }
-
-    @Nested
-    @JdbcTest
-    @DatabaseRiderTest
-    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/FileServiceTest-data/SearchTest/setup-search.yml")
     @DisplayName("searchは指定したFolder直下にあるFileを取得する")
     class SearchTest {

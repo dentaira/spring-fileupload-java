@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,16 +37,8 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> searchRoot() {
-        return jdbcTemplate.query(
-                "SELECT id, name, path, type, size FROM file WHERE cast(id as text) = replace(path, '/', '')"
-                , (rs, rowNum) -> {
-                    return new StoredFile(UUID.fromString(rs.getString("id"))
-                            , rs.getString("name")
-                            , Path.of(rs.getString("path"))
-                            , FileType.valueOf(rs.getString("type"))
-                            , rs.getLong("size"));
-                });
+    public List<StoredFile> searchRoot(UserAccount user) {
+        return fileRepository.searchRoot(user);
     }
 
     @Transactional(readOnly = true)
