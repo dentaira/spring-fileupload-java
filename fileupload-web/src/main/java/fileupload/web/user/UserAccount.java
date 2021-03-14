@@ -22,6 +22,10 @@ public class UserAccount {
         this.role = role;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
     public String getEmail() {
         return email;
     }
