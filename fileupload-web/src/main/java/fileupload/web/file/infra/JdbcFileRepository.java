@@ -28,7 +28,7 @@ public class JdbcFileRepository implements FileRepository {
                         "FROM file " +
                         "WHERE cast(id as text) = replace(path, '/', '') " +
                         "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
-                (pss) -> pss.setObject(1, user.getId()),
+                ps -> ps.setObject(1, user.getId()),
                 (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -45,16 +45,16 @@ public class JdbcFileRepository implements FileRepository {
         int level = getLevel(parentDirId);
 
         return jdbcTemplate.query(
-                "SELECT id, name, path, type, size FROM file"
-                        + " WHERE path LIKE (SELECT path FROM file WHERE id = ?) || '_%'"
-                        + " AND LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = (? + 1)"
-                        + " AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)"
-                , (ps) -> {
+                "SELECT id, name, path, type, size FROM file " +
+                        "WHERE path LIKE (SELECT path FROM file WHERE id = ?) || '_%' " +
+                        "AND LENGTH(path) - LENGTH(REPLACE(path, '/', '')) = (? + 1) " +
+                        "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
+                ps -> {
                     ps.setString(1, parentDirId);
                     ps.setInt(2, level);
                     ps.setObject(3, user.getId());
-                }
-                , (rs, rowNum) -> {
+                },
+                (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
@@ -65,16 +65,16 @@ public class JdbcFileRepository implements FileRepository {
 
     private int getLevel(String parentDirId) {
         return jdbcTemplate.queryForObject(
-                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM file WHERE id = ?"
-                , new Object[]{parentDirId}
-                , int.class);
+                "SELECT LENGTH(path) - LENGTH(REPLACE(path, '/', '')) FROM file WHERE id = ?",
+                new Object[]{parentDirId},
+                int.class);
     }
 
     @Override
     public void save(StoredFile file) {
         jdbcTemplate.update(
-                "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)"
-                , (ps) -> {
+                "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)",
+                ps -> {
                     ps.setString(1, file.getId().toString());
                     ps.setString(2, file.getName());
                     ps.setBinaryStream(3, file.getContent());

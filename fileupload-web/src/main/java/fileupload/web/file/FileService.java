@@ -72,8 +72,8 @@ public class FileService {
     @Transactional(readOnly = true)
     public StoredFile findById(String downloadId) {
         return (StoredFile) jdbcTemplate.query(
-                "SELECT id, name, path, type, content, size FROM file WHERE id = ?"
-                , (rs) -> {
+                "SELECT id, name, path, type, content, size FROM file WHERE id = ?",
+                rs -> {
                     rs.next();
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -81,18 +81,19 @@ public class FileService {
                             , FileType.valueOf(rs.getString("type"))
                             , rs.getBinaryStream("content")
                             , rs.getLong("size"));
-                }, downloadId);
+                },
+                downloadId);
     }
 
     @Transactional(readOnly = true)
     public Path findPathById(String id) {
         return jdbcTemplate.query(
-                "SELECT path FROM file WHERE id = ?"
-                , rs -> {
+                "SELECT path FROM file WHERE id = ?",
+                rs -> {
                     rs.next();
                     return Path.of(rs.getString("path"));
-                }
-                , id);
+                },
+                id);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -150,7 +151,7 @@ public class FileService {
 
         // SQL実行
         return jdbcTemplate.query(sql.toString(),
-                (ps) -> {
+                ps -> {
                     for (int i = 0; i < params.size(); i++) {
                         ps.setString(i + 1, params.get(i));
                     }
