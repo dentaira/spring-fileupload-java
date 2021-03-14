@@ -2,6 +2,7 @@ package fileupload.web.file;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
+import fileupload.web.file.infra.JdbcFileOwnershipRepository;
 import fileupload.web.file.infra.JdbcFileRepository;
 import fileupload.web.test.annotation.DatabaseRiderTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,10 @@ class FileServiceTest {
 
     @BeforeEach
     void setUp() {
-        sut = new FileService(new JdbcFileRepository(jdbcTemplate), jdbcTemplate);
+        sut = new FileService(
+                new JdbcFileRepository(jdbcTemplate),
+                new JdbcFileOwnershipRepository(jdbcTemplate),
+                jdbcTemplate);
     }
 
     @Nested

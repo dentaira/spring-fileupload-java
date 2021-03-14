@@ -1,5 +1,6 @@
 package fileupload.web.file;
 
+import fileupload.web.user.UserAccount;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.sql.Types;
 import java.util.*;
 
 @Service
@@ -24,11 +24,14 @@ public class FileService {
 
     final FileRepository fileRepository;
 
+    final FileOwnershipRepository fileOwnershipRepository;
+
     // TODO Repositoryを作成する
     final JdbcTemplate jdbcTemplate;
 
-    public FileService(FileRepository fileRepository, JdbcTemplate jdbcTemplate) {
+    public FileService(FileRepository fileRepository, FileOwnershipRepository fileOwnershipRepository, JdbcTemplate jdbcTemplate) {
         this.fileRepository = fileRepository;
+        this.fileOwnershipRepository = fileOwnershipRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -70,12 +73,11 @@ public class FileService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void register(MultipartFile multipartFile, Path parentPath) {
+    public void register(MultipartFile multipartFile, Path parentPath, UserAccount account) {
         // TODO MultipartFileに依存しないようにする
 
         try (InputStream in = multipartFile.getInputStream()) {
             var fileId = UUID.randomUUID();
-
             var file = new StoredFile(
                     fileId,
                     multipartFile.getOriginalFilename(),
@@ -84,7 +86,10 @@ public class FileService {
                     in,
                     multipartFile.getSize()
             );
+
             fileRepository.save(file);
+
+            fileOwnershipRepository.create(fileId, account.getId(), "READ_AND_WRITE");
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -118,17 +123,20 @@ public class FileService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createDirectory(String name, Path parentPath) {
-        jdbcTemplate.update(
-                "INSERT INTO file(id, name, size, path, type) VALUES(?, ?, ?, ?, ?)"
-                , (ps) -> {
-                    var id = UUID.randomUUID().toString();
-                    ps.setString(1, id);
-                    ps.setString(2, name);
-                    ps.setLong(3, 0L);
-                    ps.setString(4, parentPath.resolve(id).toString() + "/");
-                    ps.setObject(5, FileType.DIRECTORY, Types.OTHER);
-                });
+    public void createDirectory(String name, Path parentPath, UserAccount account) {
+        var fileId = UUID.randomUUID();
+        var file = new StoredFile(
+                fileId,
+                name,
+                parentPath.resolve(fileId.toString()),
+                FileType.DIRECTORY,
+                null,
+                0L
+        );
+
+        fileRepository.save(file);
+
+        fileOwnershipRepository.create(fileId, account.getId(), "READ_AND_WRITE");
     }
 
     @Transactional(rollbackFor = Exception.class)

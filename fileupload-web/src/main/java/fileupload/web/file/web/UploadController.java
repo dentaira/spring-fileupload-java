@@ -2,8 +2,10 @@ package fileupload.web.file.web;
 
 import fileupload.web.file.FileService;
 import fileupload.web.file.StoredFile;
+import fileupload.web.security.AccountUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,7 @@ public class UploadController {
     }
 
     @GetMapping("home")
-    public String home(UploadForm form, Model model) {
+    public String home(UploadForm form, Model model, @AuthenticationPrincipal AccountUserDetails user) {
         List<StoredFile> files = fileService.searchRoot();
         form.setStoredFiles(files);
         model.addAttribute("ancestors", Collections.<StoredFile>emptyList());
@@ -61,27 +63,31 @@ public class UploadController {
     }
 
     @PostMapping({"upload", "upload/{currentDir}"})
-    public String upload(UploadForm form, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
+    public String upload(UploadForm form, @PathVariable Optional<String> currentDir,
+                         @AuthenticationPrincipal AccountUserDetails user,
+                         RedirectAttributes redirectAttributes) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
             parentPath = fileService.findPathById(currentDir.get());
         } else {
             parentPath = Path.of("/");
         }
-        fileService.register(form.getUploadFile(), parentPath);
+        fileService.register(form.getUploadFile(), parentPath, user.getAccount());
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
         return "redirect:/file/home/" + currentDir.orElse("");
     }
 
     @PostMapping({"create/directory", "create/directory/{currentDir}"})
-    public String createDirectory(@RequestParam("createDirName") String createDirName, @PathVariable Optional<String> currentDir) {
+    public String createDirectory(@RequestParam("createDirName") String createDirName,
+                                  @PathVariable Optional<String> currentDir,
+                                  @AuthenticationPrincipal AccountUserDetails user) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
             parentPath = fileService.findPathById(currentDir.get());
         } else {
             parentPath = Path.of("/");
         }
-        fileService.createDirectory(createDirName, parentPath);
+        fileService.createDirectory(createDirName, parentPath, user.getAccount());
         return "redirect:/file/home/" + currentDir.orElse("");
     }
 
