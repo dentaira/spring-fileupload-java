@@ -1,4 +1,4 @@
-package fileupload.web.config;
+package fileupload.web.security.config;
 
 import fileupload.web.security.FileUploadUserDetailsService;
 import fileupload.web.user.UserAccountRepository;
