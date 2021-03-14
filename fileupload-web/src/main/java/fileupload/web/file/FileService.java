@@ -1,8 +1,5 @@
-package fileupload.web.domain.file;
+package fileupload.web.file;
 
-import fileupload.web.domain.file.Directories;
-import fileupload.web.domain.file.FileType;
-import fileupload.web.domain.file.StoredFile;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

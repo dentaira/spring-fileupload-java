@@ -1,4 +1,4 @@
-package fileupload.web.domain.file;
+package fileupload.web.file;
 
 import java.io.InputStream;
 import java.nio.file.Path;

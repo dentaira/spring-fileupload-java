@@ -1,4 +1,4 @@
-package fileupload.web.domain.file;
+package fileupload.web.file;
 
 public enum FileType {
     FILE, DIRECTORY;

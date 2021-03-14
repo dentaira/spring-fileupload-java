@@ -1,4 +1,4 @@
-package fileupload.web.domain.file;
+package fileupload.web.file;
 
 import java.util.Collections;
 import java.util.List;

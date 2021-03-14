@@ -1,7 +1,7 @@
-package fileupload.web.app.file;
+package fileupload.web.file.web;
 
-import fileupload.web.domain.file.DirectoryService;
-import fileupload.web.domain.file.FileService;
+import fileupload.web.file.DirectoryService;
+import fileupload.web.file.FileService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
