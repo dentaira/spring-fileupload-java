@@ -1,4 +1,4 @@
 \c fileupload docker
 
-INSERT INTO user_account(email, name, password, role) VALUES('local@domain', 'mu', '{noop}password', 'USER');
+INSERT INTO user_account(id, email, name, password, role) VALUES(gen_random_uuid(), 'local@domain', 'mu', '{noop}password', 'USER');
 COMMIT;

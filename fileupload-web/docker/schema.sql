@@ -12,8 +12,16 @@ CREATE TABLE IF NOT EXISTS file (
 );
 
 CREATE TABLE IF NOT EXISTS user_account (
-    email VARCHAR(254) PRIMARY KEY,
+    id UUID PRIMARY KEY,
+    email VARCHAR(254) UNIQUE,
     name VARCHAR(64),
     password VARCHAR(256),
     role VARCHAR(20)
-)
+);
+
+CREATE TABLE IF NOT EXISTS file_ownership (
+    file_id CHAR(36),
+    owned_at UUID,
+    type VARCHAR(20),
+    PRIMARY KEY (file_id, owned_at)
+);

@@ -25,7 +25,7 @@
                 <li>
                     <a th:href="@{/file/home}">home</a>
                 </li>
-                <li th:each="dir : ${ancestors.value()}">
+                <li th:each="dir : ${ancestors}">
                     <a th:href="@{'/file/home/'+${dir.id}}" th:text="${dir.name}"></a>
                 </li>
                 <li th:if="${currentDir != null}">
@@ -46,7 +46,7 @@
                     <input type="file" id="uploadFile" onchange="submitUpload()" th:field="*{uploadFile}"
                            class="upload-button">
                 </form>
-                <form name="createDirForm" th:action="@{'/directory/create/'+${currentDirId}}" method="POST">
+                <form name="createDirForm" th:action="@{'/file/create/directory/'+${currentDirId}}" method="POST">
                     <button onclick="clickFile('createDirName'); return false" class="create-button">フォルダを作成</button>
                     <input type="text" style="display: none" onclick="submitCreateDir()" id="createDirName"
                            name="createDirName">
