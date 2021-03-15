@@ -16,11 +16,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
@@ -132,6 +134,92 @@ class JdbcFileRepositoryTest {
                     "role");
             List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12", user);
             assertEquals(0, actual.size());
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/FindByIdTest/setup-findById.yml")
+    @DisplayName("findById(String,UserAccount)はUserAccountが所有するidが一致するFileを取得する")
+    class FindByIdTest {
+
+        @Test
+        void testFindOneDirectory() {
+            // given
+            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
+                    "email", "name", "password", "USER");
+            UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
+            StoredFile expected = new StoredFile(
+                    fileId,
+                    "フォルダ１",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
+                    FileType.DIRECTORY,
+                    null,
+                    0L);
+            // when
+            StoredFile actual = sut.findById(fileId.toString(), user);
+            // then
+            assertThat(actual).isEqualToComparingFieldByField(expected);
+        }
+
+        @Test
+        void testFindOneFile() throws IOException {
+            // given
+            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"),
+                    "email", "name", "password", "USER");
+            UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
+            StoredFile expected = new StoredFile(
+                    fileId,
+                    "ファイル４",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
+                    FileType.FILE,
+                    new ByteArrayInputStream("file4 content".getBytes()),
+                    3L);
+            // when
+            StoredFile actual = sut.findById(fileId.toString(), user);
+            // then
+            assertThat(actual).isEqualToIgnoringGivenFields(expected, "content");
+            assertThat(actual.getContent()).hasSameContentAs(expected.getContent());
+        }
+
+        @Test
+        void testUserNotMatched() throws IOException {
+            // given
+            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
+                    "email", "name", "password", "USER");
+            UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
+            StoredFile expected = new StoredFile(
+                    fileId,
+                    "ファイル４",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
+                    FileType.FILE,
+                    new ByteArrayInputStream("file4 content".getBytes()),
+                    3L);
+            // when
+            StoredFile actual = sut.findById(fileId.toString(), user);
+            // then
+            assertThat(actual).isNull();
+        }
+
+        @Test
+        void testFileNotFound() throws IOException {
+            // given
+            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
+                    "email", "name", "password", "USER");
+            UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B99");
+            StoredFile expected = new StoredFile(
+                    fileId,
+                    "ファイル４",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
+                    FileType.FILE,
+                    new ByteArrayInputStream("file4 content".getBytes()),
+                    3L);
+            // when
+            StoredFile actual = sut.findById(fileId.toString(), user);
+            // then
+            assertThat(actual).isNull();
         }
     }
 

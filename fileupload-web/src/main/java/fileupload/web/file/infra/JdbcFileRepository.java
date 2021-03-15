@@ -71,6 +71,27 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
+    public StoredFile findById(String id, UserAccount user) {
+        return jdbcTemplate.query(
+                "SELECT id, name, path, type, content, size FROM file WHERE LOWER(id) = LOWER(?) " +
+                        "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
+                rs -> {
+                    if (rs.next()) {
+                        return new StoredFile(
+                                UUID.fromString(rs.getString("id")),
+                                rs.getString("name"),
+                                Path.of(rs.getString("path")),
+                                FileType.valueOf(rs.getString("type")),
+                                rs.getBinaryStream("content"),
+                                rs.getLong("size"));
+                    } else {
+                        return null;
+                    }
+                },
+                id, user.getId());
+    }
+
+    @Override
     public void save(StoredFile file) {
         jdbcTemplate.update(
                 "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)",

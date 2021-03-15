@@ -70,19 +70,8 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public StoredFile findById(String downloadId) {
-        return (StoredFile) jdbcTemplate.query(
-                "SELECT id, name, path, type, content, size FROM file WHERE id = ?",
-                rs -> {
-                    rs.next();
-                    return new StoredFile(UUID.fromString(rs.getString("id"))
-                            , rs.getString("name")
-                            , Path.of(rs.getString("path"))
-                            , FileType.valueOf(rs.getString("type"))
-                            , rs.getBinaryStream("content")
-                            , rs.getLong("size"));
-                },
-                downloadId);
+    public StoredFile findById(String downloadId, UserAccount user) {
+        return fileRepository.findById(downloadId, user);
     }
 
     @Transactional(readOnly = true)

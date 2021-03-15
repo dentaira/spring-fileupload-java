@@ -37,7 +37,7 @@ public class UploadController {
     public String home(UploadForm form, Model model, @AuthenticationPrincipal AccountUserDetails user) {
         List<StoredFile> files = fileService.searchRoot(user.getAccount());
         form.setStoredFiles(files);
-        model.addAttribute("ancestors", Collections.<StoredFile>emptyList());
+        model.addAttribute("ancestors", Collections.emptyList());
         return "file-list";
     }
 
@@ -48,9 +48,10 @@ public class UploadController {
         List<StoredFile> files = fileService.search(fileId, user.getAccount());
         form.setStoredFiles(files);
 
-        StoredFile currentDir = fileService.findById(fileId);
+        StoredFile currentDir = fileService.findById(fileId, user.getAccount());
         model.addAttribute("currentDir", currentDir);
 
+        // TODO ownership
         List<StoredFile> ancestors = fileService.findAncestors(fileId);
         model.addAttribute("ancestors", ancestors);
 
@@ -58,8 +59,9 @@ public class UploadController {
     }
 
     @GetMapping("download/{fileId}")
-    public String download(@PathVariable String fileId, Model model) {
-        StoredFile downloadFile = fileService.findById(fileId);
+    public String download(@PathVariable String fileId, Model model,
+                           @AuthenticationPrincipal AccountUserDetails user) {
+        StoredFile downloadFile = fileService.findById(fileId, user.getAccount());
         model.addAttribute("downloadFile", downloadFile);
         return "storedFileDownloadView";
     }
@@ -70,6 +72,7 @@ public class UploadController {
                          RedirectAttributes redirectAttributes) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
+            // TODO ownership
             parentPath = fileService.findPathById(currentDir.get());
         } else {
             parentPath = Path.of("/");
@@ -85,6 +88,7 @@ public class UploadController {
                                   @AuthenticationPrincipal AccountUserDetails user) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
+            // TODO ownership
             parentPath = fileService.findPathById(currentDir.get());
         } else {
             parentPath = Path.of("/");
@@ -95,6 +99,7 @@ public class UploadController {
 
     @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
     public String delete(@PathVariable String fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
+        // TODO ownership
         fileService.delete(fileId);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
         return "redirect:/file/home/" + currentDir.orElse("");

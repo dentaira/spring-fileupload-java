@@ -10,5 +10,7 @@ public interface FileRepository {
 
     public List<StoredFile> search(String parentDirId, UserAccount user);
 
+    public StoredFile findById(String id, UserAccount user);
+
     public void save(StoredFile file);
 }
