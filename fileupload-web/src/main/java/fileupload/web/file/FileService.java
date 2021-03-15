@@ -41,8 +41,8 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> search(String dirId, UserAccount user) {
-        return fileRepository.search(dirId, user);
+    public List<StoredFile> search(String parentId, UserAccount user) {
+        return fileRepository.search(parentId, user);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -70,19 +70,19 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public StoredFile findById(String downloadId, UserAccount user) {
-        return fileRepository.findById(downloadId, user);
+    public StoredFile findById(String fileId, UserAccount user) {
+        return fileRepository.findById(fileId, user);
     }
 
     @Transactional(readOnly = true)
-    public Path findPathById(String id) {
+    public Path findPathById(String fileId) {
         return jdbcTemplate.query(
                 "SELECT path FROM file WHERE id = ?",
                 rs -> {
                     rs.next();
                     return Path.of(rs.getString("path"));
                 },
-                id);
+                fileId);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -114,10 +114,10 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> findAncestors(String id) {
+    public List<StoredFile> findAncestors(String fileId) {
 
         // パスを取得
-        Path path = findPathById(id);
+        Path path = findPathById(fileId);
 
         if (path.getParent().equals(ROOT_PATH)) {
             return Collections.emptyList();
