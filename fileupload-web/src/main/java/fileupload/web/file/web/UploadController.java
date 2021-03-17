@@ -19,8 +19,6 @@ import java.util.Optional;
 @RequestMapping("file")
 public class UploadController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     final FileService fileService;
 
     public UploadController(FileService fileService) {
