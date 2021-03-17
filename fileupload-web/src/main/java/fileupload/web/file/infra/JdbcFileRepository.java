@@ -2,8 +2,8 @@ package fileupload.web.file.infra;
 
 import fileupload.web.file.FileRepository;
 import fileupload.web.file.FileType;
+import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
-import fileupload.web.user.UserAccount;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -22,13 +22,13 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public List<StoredFile> searchRoot(UserAccount user) {
+    public List<StoredFile> searchRoot(Owner owner) {
         return jdbcTemplate.query(
                 "SELECT id, name, path, type, size " +
                         "FROM file " +
                         "WHERE cast(id as text) = replace(path, '/', '') " +
                         "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
-                ps -> ps.setObject(1, user.getId()),
+                ps -> ps.setObject(1, owner.getId()),
                 (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
                             , rs.getString("name")
@@ -39,7 +39,7 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public List<StoredFile> search(String parentDirId, UserAccount user) {
+    public List<StoredFile> search(String parentDirId, Owner owner) {
 
         // TODO levelを使わない方法にリファクタリングする。
         int level = getLevel(parentDirId);
@@ -52,7 +52,7 @@ public class JdbcFileRepository implements FileRepository {
                 ps -> {
                     ps.setString(1, parentDirId);
                     ps.setInt(2, level);
-                    ps.setObject(3, user.getId());
+                    ps.setObject(3, owner.getId());
                 },
                 (rs, rowNum) -> {
                     return new StoredFile(UUID.fromString(rs.getString("id"))
@@ -71,7 +71,7 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public StoredFile findById(String id, UserAccount user) {
+    public StoredFile findById(String id, Owner owner) {
         return jdbcTemplate.query(
                 "SELECT id, name, path, type, content, size FROM file WHERE LOWER(id) = LOWER(?) " +
                         "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
@@ -88,7 +88,7 @@ public class JdbcFileRepository implements FileRepository {
                         return null;
                     }
                 },
-                id, user.getId());
+                id, owner.getId());
     }
 
     @Override

@@ -18,7 +18,6 @@ public class StoredFileDownloadView extends AbstractView {
     @Override
     protected void renderMergedOutputModel(Map<String, Object> map, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
 
-
         StoredFile downloadFile = (StoredFile) map.get("downloadFile");
 
         // TODO 半角スペースが+に置換されてしまう

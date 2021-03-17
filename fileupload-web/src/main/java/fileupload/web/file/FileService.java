@@ -1,6 +1,5 @@
 package fileupload.web.file;
 
-import fileupload.web.user.UserAccount;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +35,17 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> searchRoot(UserAccount user) {
-        return fileRepository.searchRoot(user);
+    public List<StoredFile> searchRoot(Owner owner) {
+        return fileRepository.searchRoot(owner);
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> search(String parentId, UserAccount user) {
-        return fileRepository.search(parentId, user);
+    public List<StoredFile> search(String parentId, Owner owner) {
+        return fileRepository.search(parentId, owner);
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void register(MultipartFile multipartFile, Path parentPath, UserAccount account) {
+    public void register(MultipartFile multipartFile, Path parentPath, Owner owner) {
         // TODO MultipartFileに依存しないようにする
 
         try (InputStream in = multipartFile.getInputStream()) {
@@ -62,7 +61,7 @@ public class FileService {
 
             fileRepository.save(file);
 
-            fileOwnershipRepository.create(fileId, account.getId(), "READ_AND_WRITE");
+            fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
 
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -70,8 +69,8 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public StoredFile findById(String fileId, UserAccount user) {
-        return fileRepository.findById(fileId, user);
+    public StoredFile findById(String fileId, Owner owner) {
+        return fileRepository.findById(fileId, owner);
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +85,7 @@ public class FileService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void createDirectory(String name, Path parentPath, UserAccount account) {
+    public void createDirectory(String name, Path parentPath, Owner owner) {
         var fileId = UUID.randomUUID();
         var file = new StoredFile(
                 fileId,
@@ -99,7 +98,7 @@ public class FileService {
 
         fileRepository.save(file);
 
-        fileOwnershipRepository.create(fileId, account.getId(), "READ_AND_WRITE");
+        fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
     }
 
     @Transactional(rollbackFor = Exception.class)
