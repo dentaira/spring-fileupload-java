@@ -1,11 +1,10 @@
 package fileupload.web.file.web;
 
 import fileupload.web.file.FileService;
+import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
-import fileupload.web.security.AccountUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,21 +33,19 @@ public class UploadController {
     }
 
     @GetMapping("home")
-    public String home(UploadForm form, Model model, @AuthenticationPrincipal AccountUserDetails user) {
-        List<StoredFile> files = fileService.searchRoot(user.getAccount());
+    public String home(UploadForm form, Model model, Owner owner) {
+        List<StoredFile> files = fileService.searchRoot(owner);
         form.setStoredFiles(files);
         model.addAttribute("ancestors", Collections.emptyList());
         return "file-list";
     }
 
     @GetMapping("home/{fileId}")
-    public String home(UploadForm form, @PathVariable String fileId,
-                       @AuthenticationPrincipal AccountUserDetails user,
-                       Model model) {
-        List<StoredFile> files = fileService.search(fileId, user.getAccount());
+    public String home(UploadForm form, @PathVariable String fileId, Owner owner, Model model) {
+        List<StoredFile> files = fileService.search(fileId, owner);
         form.setStoredFiles(files);
 
-        StoredFile currentDir = fileService.findById(fileId, user.getAccount());
+        StoredFile currentDir = fileService.findById(fileId, owner);
         model.addAttribute("currentDir", currentDir);
 
         // TODO ownership
@@ -59,17 +56,15 @@ public class UploadController {
     }
 
     @GetMapping("download/{fileId}")
-    public String download(@PathVariable String fileId, Model model,
-                           @AuthenticationPrincipal AccountUserDetails user) {
-        StoredFile downloadFile = fileService.findById(fileId, user.getAccount());
+    public String download(@PathVariable String fileId, Model model, Owner owner) {
+        StoredFile downloadFile = fileService.findById(fileId, owner);
         model.addAttribute("downloadFile", downloadFile);
         return "storedFileDownloadView";
     }
 
     @PostMapping({"upload", "upload/{currentDir}"})
     public String upload(UploadForm form, @PathVariable Optional<String> currentDir,
-                         @AuthenticationPrincipal AccountUserDetails user,
-                         RedirectAttributes redirectAttributes) {
+                         Owner owner, RedirectAttributes redirectAttributes) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
             // TODO ownership
@@ -77,15 +72,14 @@ public class UploadController {
         } else {
             parentPath = Path.of("/");
         }
-        fileService.register(form.getUploadFile(), parentPath, user.getAccount());
+        fileService.register(form.getUploadFile(), parentPath, owner);
         redirectAttributes.addFlashAttribute("message", "アップロードが完了しました。");
         return "redirect:/file/home/" + currentDir.orElse("");
     }
 
     @PostMapping({"create/directory", "create/directory/{currentDir}"})
     public String createDirectory(@RequestParam("createDirName") String createDirName,
-                                  @PathVariable Optional<String> currentDir,
-                                  @AuthenticationPrincipal AccountUserDetails user) {
+                                  @PathVariable Optional<String> currentDir, Owner owner) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
             // TODO ownership
@@ -93,7 +87,7 @@ public class UploadController {
         } else {
             parentPath = Path.of("/");
         }
-        fileService.createDirectory(createDirName, parentPath, user.getAccount());
+        fileService.createDirectory(createDirName, parentPath, owner);
         return "redirect:/file/home/" + currentDir.orElse("");
     }
 

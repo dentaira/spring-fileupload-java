@@ -3,9 +3,9 @@ package fileupload.web.file.infra;
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
 import fileupload.web.file.FileType;
+import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
 import fileupload.web.test.annotation.DatabaseRiderTest;
-import fileupload.web.user.UserAccount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,13 +51,8 @@ class JdbcFileRepositoryTest {
         @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchRootTest/setup-testFindOne.yml")
         @DisplayName("Root配下のFileが1つの場合は1つ取得する")
         void testFindOne() {
-            UserAccount user = new UserAccount(
-                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"),
-                    "email",
-                    "name",
-                    "password",
-                    "role");
-            List<StoredFile> actual = sut.searchRoot(user);
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"));
+            List<StoredFile> actual = sut.searchRoot(owner);
             assertEquals(1, actual.size());
         }
 
@@ -65,13 +60,8 @@ class JdbcFileRepositoryTest {
         @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchRootTest/setup-testFindThree.yml")
         @DisplayName("Root配下のFileが3つの場合は3つ取得する")
         void testFindThree() {
-            UserAccount user = new UserAccount(
-                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email",
-                    "name",
-                    "password",
-                    "role");
-            List<StoredFile> actual = sut.searchRoot(user);
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
+            List<StoredFile> actual = sut.searchRoot(owner);
             assertEquals(3, actual.size());
         }
     }
@@ -87,52 +77,32 @@ class JdbcFileRepositoryTest {
         @Test
         @DisplayName("指定したFolder配下のFileが1つの場合は1つ取得する")
         void testFindOne() {
-            UserAccount user = new UserAccount(
-                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email",
-                    "name",
-                    "password",
-                    "role");
-            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13", user);
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13", owner);
             assertEquals(1, actual.size());
         }
 
         @Test
         @DisplayName("指定したFolder配下のFileが3つの場合は3つ取得する")
         void testFindThree() {
-            UserAccount user = new UserAccount(
-                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"),
-                    "email",
-                    "name",
-                    "password",
-                    "role");
-            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11", user);
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"));
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11", owner);
             assertEquals(3, actual.size());
         }
 
         @Test
         @DisplayName("指定したFolder配下にFileが存在しない場合は空のListを返す")
         void testFindZero() {
-            UserAccount user = new UserAccount(
-                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email",
-                    "name",
-                    "password",
-                    "role");
-            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12", user);
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12", owner);
             assertEquals(0, actual.size());
         }
 
         @Test
         @DisplayName("指定したFileのtypeがFileだった場合は例外が発生する")
         void testSearchFile() {
-            UserAccount user = new UserAccount(
-                    UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email",
-                    "name",
-                    "password",
-                    "role");
-            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12", user);
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
+            List<StoredFile> actual = sut.search("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12", owner);
             assertEquals(0, actual.size());
         }
     }
@@ -142,14 +112,13 @@ class JdbcFileRepositoryTest {
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/FindByIdTest/setup-findById.yml")
-    @DisplayName("findById(String,UserAccount)はUserAccountが所有するidが一致するFileを取得する")
+    @DisplayName("findById(String,Owner)はOwnerが所有するidが一致するFileを取得する")
     class FindByIdTest {
 
         @Test
         void testFindOneDirectory() {
             // given
-            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email", "name", "password", "USER");
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
             StoredFile expected = new StoredFile(
                     fileId,
@@ -159,7 +128,7 @@ class JdbcFileRepositoryTest {
                     null,
                     0L);
             // when
-            StoredFile actual = sut.findById(fileId.toString(), user);
+            StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
             assertThat(actual).isEqualToComparingFieldByField(expected);
         }
@@ -167,8 +136,7 @@ class JdbcFileRepositoryTest {
         @Test
         void testFindOneFile() throws IOException {
             // given
-            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"),
-                    "email", "name", "password", "USER");
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
             StoredFile expected = new StoredFile(
                     fileId,
@@ -178,7 +146,7 @@ class JdbcFileRepositoryTest {
                     new ByteArrayInputStream("file4 content".getBytes()),
                     3L);
             // when
-            StoredFile actual = sut.findById(fileId.toString(), user);
+            StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
             assertThat(actual).isEqualToIgnoringGivenFields(expected, "content");
             assertThat(actual.getContent()).hasSameContentAs(expected.getContent());
@@ -187,8 +155,7 @@ class JdbcFileRepositoryTest {
         @Test
         void testUserNotMatched() throws IOException {
             // given
-            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email", "name", "password", "USER");
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
             StoredFile expected = new StoredFile(
                     fileId,
@@ -198,7 +165,7 @@ class JdbcFileRepositoryTest {
                     new ByteArrayInputStream("file4 content".getBytes()),
                     3L);
             // when
-            StoredFile actual = sut.findById(fileId.toString(), user);
+            StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
             assertThat(actual).isNull();
         }
@@ -206,8 +173,7 @@ class JdbcFileRepositoryTest {
         @Test
         void testFileNotFound() throws IOException {
             // given
-            UserAccount user = new UserAccount(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"),
-                    "email", "name", "password", "USER");
+            var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B99");
             StoredFile expected = new StoredFile(
                     fileId,
@@ -217,7 +183,7 @@ class JdbcFileRepositoryTest {
                     new ByteArrayInputStream("file4 content".getBytes()),
                     3L);
             // when
-            StoredFile actual = sut.findById(fileId.toString(), user);
+            StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
             assertThat(actual).isNull();
         }
