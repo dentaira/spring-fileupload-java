@@ -45,8 +45,7 @@ public class UploadController {
         StoredFile currentDir = fileService.findById(fileId, owner);
         model.addAttribute("currentDir", currentDir);
 
-        // TODO ownership
-        List<StoredFile> ancestors = fileService.findAncestors(fileId);
+        List<StoredFile> ancestors = fileService.findAncestors(fileId, owner);
         model.addAttribute("ancestors", ancestors);
 
         return "file-list";
@@ -64,8 +63,7 @@ public class UploadController {
                          Owner owner, RedirectAttributes redirectAttributes) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
-            // TODO ownership
-            parentPath = fileService.findPathById(currentDir.get());
+            parentPath = fileService.findById(currentDir.get(), owner).getPath();
         } else {
             parentPath = Path.of("/");
         }
@@ -79,8 +77,7 @@ public class UploadController {
                                   @PathVariable Optional<String> currentDir, Owner owner) {
         Path parentPath = null;
         if (currentDir.isPresent()) {
-            // TODO ownership
-            parentPath = fileService.findPathById(currentDir.get());
+            parentPath = fileService.findById(currentDir.get(), owner).getPath();
         } else {
             parentPath = Path.of("/");
         }
@@ -89,9 +86,9 @@ public class UploadController {
     }
 
     @PostMapping({"delete/{fileId}", "delete/{currentDir}/{fileId}"})
-    public String delete(@PathVariable String fileId, @PathVariable Optional<String> currentDir, RedirectAttributes redirectAttributes) {
-        // TODO ownership
-        fileService.delete(fileId);
+    public String delete(@PathVariable String fileId, Owner owner, @PathVariable Optional<String> currentDir,
+                         RedirectAttributes redirectAttributes) {
+        fileService.delete(fileId, owner);
         redirectAttributes.addFlashAttribute("message", "削除しました。");
         return "redirect:/file/home/" + currentDir.orElse("");
     }
