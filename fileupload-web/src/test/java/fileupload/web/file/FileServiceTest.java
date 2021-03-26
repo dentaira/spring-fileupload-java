@@ -49,16 +49,14 @@ class FileServiceTest {
         @ExpectedDataSet("fileupload/web/file/FileServiceTest-data/DeleteTest/expected-testDeleteFile.yml")
         @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
         void testDeleteFile() {
-            int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
-            assertEquals(1, count);
+            sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
         }
 
         @Test
         @ExpectedDataSet("fileupload/web/file/FileServiceTest-data/DeleteTest/expected-testDeleteFolder.yml")
         @DisplayName("削除するFileのtypeがFolderの場合は指定したFileと配下のFile全てを削除する")
         void testDeleteFolder() {
-            int count = sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
-            assertEquals(3, count);
+            sut.delete("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
         }
     }
 
