@@ -1,5 +1,6 @@
 package fileupload.web.file.web;
 
+import fileupload.web.file.FileContent;
 import fileupload.web.file.StoredFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.view.AbstractView;
@@ -14,19 +15,21 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
-public class StoredFileDownloadView extends AbstractView {
+public class ContentDownloadView extends AbstractView {
+
     @Override
     protected void renderMergedOutputModel(Map<String, Object> map, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
 
-        StoredFile downloadFile = (StoredFile) map.get("downloadFile");
+        FileContent fileContent = (FileContent) map.get("downloadFile");
+        StoredFile file = fileContent.getFile();
 
         // TODO 半角スペースが+に置換されてしまう
-        String filename = URLEncoder.encode(downloadFile.getName(), StandardCharsets.UTF_8);
+        String filename = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8);
 
         // TODO 日本語含めるときはダブルクォーテーションが必要なはずでは？
         httpServletResponse.setHeader("Content-Disposition","attachment;filename=" + filename);
 
-        try (InputStream in = downloadFile.getContent()) {
+        try (InputStream in = fileContent.getStream()) {
 
             Objects.requireNonNull(in);
 

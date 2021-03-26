@@ -1,19 +1,19 @@
 package fileupload.web.file.infra;
 
-import fileupload.web.file.FileRepository;
-import fileupload.web.file.FileType;
-import fileupload.web.file.Owner;
-import fileupload.web.file.StoredFile;
+import fileupload.web.file.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.sql.Types;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class JdbcFileRepository implements FileRepository {
+
+    public static final Path ROOT_PATH = Path.of("/");
 
     private JdbcTemplate jdbcTemplate;
 
@@ -73,7 +73,7 @@ public class JdbcFileRepository implements FileRepository {
     @Override
     public StoredFile findById(String id, Owner owner) {
         return jdbcTemplate.query(
-                "SELECT id, name, path, type, content, size FROM file WHERE LOWER(id) = LOWER(?) " +
+                "SELECT id, name, path, type, size FROM file WHERE LOWER(id) = LOWER(?) " +
                         "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
                 rs -> {
                     if (rs.next()) {
@@ -82,7 +82,6 @@ public class JdbcFileRepository implements FileRepository {
                                 rs.getString("name"),
                                 Path.of(rs.getString("path")),
                                 FileType.valueOf(rs.getString("type")),
-                                rs.getBinaryStream("content"),
                                 rs.getLong("size"));
                     } else {
                         return null;
@@ -92,17 +91,82 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public void save(StoredFile file) {
+    public FileContent findContent(StoredFile file) {
+        InputStream in = jdbcTemplate.query(
+                "SELECT content FROM file WHERE LOWER(id) = LOWER(?) ",
+                rs -> {
+                    if (rs.next()) {
+                        return rs.getBinaryStream("content");
+                    } else {
+                        return null;
+                    }
+                },
+                file.getId().toString()
+        );
+        return new FileContent(file, in);
+    }
+
+    @Override
+    public List<StoredFile> searchForAncestors(StoredFile file) {
+
+        if (file.getPath().getParent().equals(ROOT_PATH)) {
+            return Collections.emptyList();
+        }
+        // パラメータとプレースホルダーを作成
+        var params = new ArrayList<String>();
+        var placeholders = new ArrayList<String>();
+        for (Iterator<Path> itr = file.getPath().getParent().iterator(); itr.hasNext(); ) {
+            Path p = itr.next();
+            params.add(p.toString());
+            placeholders.add("?");
+        }
+
+        // SQLを作成
+        var sql = new StringBuilder("SELECT id, name, path, type, size FROM file WHERE id IN (");
+        String in = StringUtils.join(placeholders, ", ");
+        sql.append(in).append(")");
+        sql.append("ORDER BY char_length(path)");
+
+        // SQL実行
+        return jdbcTemplate.query(sql.toString(),
+                ps -> {
+                    for (int i = 0; i < params.size(); i++) {
+                        ps.setString(i + 1, params.get(i));
+                    }
+                },
+                (rs, rowNum) -> {
+                    return new StoredFile(
+                            UUID.fromString(rs.getString("id")),
+                            rs.getString("name"),
+                            Path.of(rs.getString("path")),
+                            FileType.valueOf(rs.getString("type")),
+                            rs.getLong("size")
+                    );
+                });
+    }
+
+    @Override
+    public void save(FileContent fileContent) {
+        StoredFile file = fileContent.getFile();
         jdbcTemplate.update(
                 "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)",
                 ps -> {
                     ps.setString(1, file.getId().toString());
                     ps.setString(2, file.getName());
-                    ps.setBinaryStream(3, file.getContent());
+                    ps.setBinaryStream(3, fileContent.getStream());
                     ps.setLong(4, file.getSize());
                     ps.setString(5, file.getPath().toString() + "/");
                     ps.setObject(6, file.getType(), Types.OTHER);
                 }
         );
+    }
+
+    @Override
+    public void delete(StoredFile file) {
+        if (file.getType() == FileType.FILE) {
+            jdbcTemplate.update("DELETE FROM file WHERE LOWER(id) = LOWER(?)", file.getId().toString());
+        } else {
+            jdbcTemplate.update("DELETE FROM file WHERE path LIKE ? || '%'", file.getPath().toString() + "/");
+        }
     }
 }

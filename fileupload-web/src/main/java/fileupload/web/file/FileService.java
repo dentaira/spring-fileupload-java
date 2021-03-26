@@ -1,9 +1,5 @@
 package fileupload.web.file;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,26 +8,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FileService {
-
-    public static final Path ROOT_PATH = Path.of("/");
-
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     final FileRepository fileRepository;
 
     final FileOwnershipRepository fileOwnershipRepository;
 
-    // TODO Repositoryを作成する
-    final JdbcTemplate jdbcTemplate;
-
-    public FileService(FileRepository fileRepository, FileOwnershipRepository fileOwnershipRepository, JdbcTemplate jdbcTemplate) {
+    public FileService(FileRepository fileRepository, FileOwnershipRepository fileOwnershipRepository) {
         this.fileRepository = fileRepository;
         this.fileOwnershipRepository = fileOwnershipRepository;
-        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -55,12 +44,10 @@ public class FileService {
                     multipartFile.getOriginalFilename(),
                     parentPath.resolve(fileId.toString()),
                     FileType.FILE,
-                    in,
                     multipartFile.getSize()
             );
 
-            fileRepository.save(file);
-
+            fileRepository.save(new FileContent(file, in));
             fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
 
         } catch (IOException e) {
@@ -74,14 +61,9 @@ public class FileService {
     }
 
     @Transactional(readOnly = true)
-    public Path findPathById(String fileId) {
-        return jdbcTemplate.query(
-                "SELECT path FROM file WHERE id = ?",
-                rs -> {
-                    rs.next();
-                    return Path.of(rs.getString("path"));
-                },
-                fileId);
+    public FileContent findContentById(String fileId, Owner owner) {
+        StoredFile file = findById(fileId, owner);
+        return fileRepository.findContent(file);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -92,67 +74,24 @@ public class FileService {
                 name,
                 parentPath.resolve(fileId.toString()),
                 FileType.DIRECTORY,
-                null,
                 0L
         );
 
-        fileRepository.save(file);
+        fileRepository.save(new FileContent(file, null));
 
         fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public int delete(String fileId) {
-        FileType type = jdbcTemplate.queryForObject("SELECT type FROM file WHERE id = ?", FileType.class, fileId);
-        if (type == FileType.FILE) {
-            return jdbcTemplate.update("DELETE FROM file WHERE id = ?", fileId);
-        } else {
-            Path path = findPathById(fileId);
-            return jdbcTemplate.update("DELETE FROM file WHERE path LIKE ? || '%'", path.toString() + "/");
-        }
+    public void delete(String fileId, Owner owner) {
+        StoredFile file = findById(fileId, owner);
+        fileRepository.delete(file);
     }
 
     @Transactional(readOnly = true)
-    public List<StoredFile> findAncestors(String fileId) {
-
-        // パスを取得
-        Path path = findPathById(fileId);
-
-        if (path.getParent().equals(ROOT_PATH)) {
-            return Collections.emptyList();
-        }
-
-        // パラメータとプレースホルダーを作成
-        var params = new ArrayList<String>();
-        var placeholders = new ArrayList<String>();
-        for (Iterator<Path> itr = path.getParent().iterator(); itr.hasNext(); ) {
-            Path p = itr.next();
-            params.add(p.toString());
-            placeholders.add("?");
-        }
-
-        // SQLを作成
-        var sql = new StringBuilder("SELECT id, name, path, type, size FROM file WHERE id IN (");
-        String in = StringUtils.join(placeholders, ", ");
-        sql.append(in).append(")");
-        sql.append("ORDER BY char_length(path)");
-
-        // SQL実行
-        return jdbcTemplate.query(sql.toString(),
-                ps -> {
-                    for (int i = 0; i < params.size(); i++) {
-                        ps.setString(i + 1, params.get(i));
-                    }
-                },
-                (rs, rowNum) -> {
-                    return new StoredFile(
-                            UUID.fromString(rs.getString("id")),
-                            rs.getString("name"),
-                            Path.of(rs.getString("path")),
-                            FileType.valueOf(rs.getString("type")),
-                            rs.getLong("size")
-                    );
-                });
+    public List<StoredFile> findAncestors(String fileId, Owner owner) {
+        var file = findById(fileId, owner);
+        return fileRepository.searchForAncestors(file);
     }
 }
 

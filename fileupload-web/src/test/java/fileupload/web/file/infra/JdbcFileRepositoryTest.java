@@ -2,6 +2,7 @@ package fileupload.web.file.infra;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
+import fileupload.web.file.FileContent;
 import fileupload.web.file.FileType;
 import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
@@ -125,7 +126,6 @@ class JdbcFileRepositoryTest {
                     "フォルダ１",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
                     FileType.DIRECTORY,
-                    null,
                     0L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
@@ -134,7 +134,7 @@ class JdbcFileRepositoryTest {
         }
 
         @Test
-        void testFindOneFile() throws IOException {
+        void testFindOneFile() {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
@@ -143,27 +143,18 @@ class JdbcFileRepositoryTest {
                     "ファイル４",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
                     FileType.FILE,
-                    new ByteArrayInputStream("file4 content".getBytes()),
                     3L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
-            assertThat(actual).isEqualToIgnoringGivenFields(expected, "content");
-            assertThat(actual.getContent()).hasSameContentAs(expected.getContent());
+            assertThat(actual).isEqualToIgnoringGivenFields(expected);
         }
 
         @Test
-        void testUserNotMatched() throws IOException {
+        void testUserNotMatched() {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
-            StoredFile expected = new StoredFile(
-                    fileId,
-                    "ファイル４",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
-                    FileType.FILE,
-                    new ByteArrayInputStream("file4 content".getBytes()),
-                    3L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
@@ -171,21 +162,53 @@ class JdbcFileRepositoryTest {
         }
 
         @Test
-        void testFileNotFound() throws IOException {
+        void testFileNotFound() {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B99");
-            StoredFile expected = new StoredFile(
-                    fileId,
-                    "ファイル４",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
-                    FileType.FILE,
-                    new ByteArrayInputStream("file4 content".getBytes()),
-                    3L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
             assertThat(actual).isNull();
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchForAncestorsTest/setup-searchForAncestors.yml")
+    @DisplayName("searchForAncestorsは祖先フォルダ全てのListを返す")
+    class SearchForAncestorsTest {
+
+        @Test
+        void testFindTwo() {
+            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13";
+            var file = new StoredFile(
+                    UUID.fromString(param),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13/"),
+                    FileType.FILE,
+                    12L
+            );
+            List<StoredFile> actual = sut.searchForAncestors(file);
+            assertEquals(2, actual.size());
+            assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"), actual.get(0).getId());
+            assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12"), actual.get(1).getId());
+        }
+
+        @Test
+        void whenFileUnderRootThenReturnEmptyList() {
+            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11";
+            var file = new StoredFile(
+                    UUID.fromString(param),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
+                    FileType.FILE,
+                    0L
+            );
+            List<StoredFile> actual = sut.searchForAncestors(file);
+            assertEquals(0, actual.size());
         }
     }
 
@@ -207,11 +230,11 @@ class JdbcFileRepositoryTest {
                     "Bible",
                     Path.of("/parent/" + id.toString() + "/"),
                     FileType.FILE,
-                    new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)),
                     3L
             );
+            var fileContent = new FileContent(file, new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)));
             // when
-            sut.save(file);
+            sut.save(fileContent);
         }
 
         @Test
@@ -224,11 +247,47 @@ class JdbcFileRepositoryTest {
                     "Pandora",
                     Path.of("/parent/" + id.toString() + "/"),
                     FileType.DIRECTORY,
-                    null,
                     0L
             );
             // when
-            sut.save(file);
+            sut.save(new FileContent(file, null));
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/setup-delete.yml")
+    @DisplayName("deleteはStoredFileを削除する")
+    class DeleteTest {
+
+        @Test
+        @ExpectedDataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/expected-testDeleteFile.yml")
+        @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
+        void testDeleteFile() {
+            // given
+            var file = new StoredFile(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12"),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12/"),
+                    FileType.FILE,
+                    2L);
+            // when
+            sut.delete(file);
+        }
+
+        @Test
+        @ExpectedDataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/expected-testDeleteFolder.yml")
+        @DisplayName("削除するFileのtypeがFolderの場合は指定したFileと配下のFile全てを削除する")
+        void testDeleteFolder() {
+            // given
+            var file = new StoredFile(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
+                    FileType.DIRECTORY,
+                    0L);
+            // when
+            sut.delete(file);
         }
     }
 }
