@@ -134,7 +134,7 @@ class JdbcFileRepositoryTest {
         }
 
         @Test
-        void testFindOneFile() throws IOException {
+        void testFindOneFile() {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
@@ -153,7 +153,7 @@ class JdbcFileRepositoryTest {
         }
 
         @Test
-        void testUserNotMatched() throws IOException {
+        void testUserNotMatched() {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
@@ -171,7 +171,7 @@ class JdbcFileRepositoryTest {
         }
 
         @Test
-        void testFileNotFound() throws IOException {
+        void testFileNotFound() {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B99");
@@ -229,6 +229,43 @@ class JdbcFileRepositoryTest {
             );
             // when
             sut.save(file);
+        }
+    }
+
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/setup-delete.yml")
+    @DisplayName("deleteはStoredFileを削除する")
+    class DeleteTest {
+
+        @Test
+        @ExpectedDataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/expected-testDeleteFile.yml")
+        @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
+        void testDeleteFile() {
+            // given
+            var file = new StoredFile(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12"),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12/"),
+                    FileType.FILE,
+                    2L);
+            // when
+            sut.delete(file);
+        }
+
+        @Test
+        @ExpectedDataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/expected-testDeleteFolder.yml")
+        @DisplayName("削除するFileのtypeがFolderの場合は指定したFileと配下のFile全てを削除する")
+        void testDeleteFolder() {
+            // given
+            var file = new StoredFile(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
+                    FileType.DIRECTORY,
+                    0L);
+            // when
+            sut.delete(file);
         }
     }
 }
