@@ -2,6 +2,7 @@ package fileupload.web.file.infra;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
+import fileupload.web.file.FileContent;
 import fileupload.web.file.FileType;
 import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
@@ -125,7 +126,6 @@ class JdbcFileRepositoryTest {
                     "フォルダ１",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
                     FileType.DIRECTORY,
-                    null,
                     0L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
@@ -143,13 +143,11 @@ class JdbcFileRepositoryTest {
                     "ファイル４",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
                     FileType.FILE,
-                    new ByteArrayInputStream("file4 content".getBytes()),
                     3L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
-            assertThat(actual).isEqualToIgnoringGivenFields(expected, "content");
-            assertThat(actual.getContent()).hasSameContentAs(expected.getContent());
+            assertThat(actual).isEqualToIgnoringGivenFields(expected);
         }
 
         @Test
@@ -157,13 +155,6 @@ class JdbcFileRepositoryTest {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
-            StoredFile expected = new StoredFile(
-                    fileId,
-                    "ファイル４",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
-                    FileType.FILE,
-                    new ByteArrayInputStream("file4 content".getBytes()),
-                    3L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
@@ -175,19 +166,13 @@ class JdbcFileRepositoryTest {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B99");
-            StoredFile expected = new StoredFile(
-                    fileId,
-                    "ファイル４",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
-                    FileType.FILE,
-                    new ByteArrayInputStream("file4 content".getBytes()),
-                    3L);
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
             assertThat(actual).isNull();
         }
     }
+
     @Nested
     @JdbcTest
     @DatabaseRiderTest
@@ -245,11 +230,11 @@ class JdbcFileRepositoryTest {
                     "Bible",
                     Path.of("/parent/" + id.toString() + "/"),
                     FileType.FILE,
-                    new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)),
                     3L
             );
+            var fileContent = new FileContent(file, new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)));
             // when
-            sut.save(file);
+            sut.save(fileContent);
         }
 
         @Test
@@ -262,11 +247,10 @@ class JdbcFileRepositoryTest {
                     "Pandora",
                     Path.of("/parent/" + id.toString() + "/"),
                     FileType.DIRECTORY,
-                    null,
                     0L
             );
             // when
-            sut.save(file);
+            sut.save(new FileContent(file, null));
         }
     }
 

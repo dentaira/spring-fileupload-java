@@ -1,13 +1,11 @@
 package fileupload.web.file.infra;
 
-import fileupload.web.file.FileRepository;
-import fileupload.web.file.FileType;
-import fileupload.web.file.Owner;
-import fileupload.web.file.StoredFile;
+import fileupload.web.file.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.sql.Types;
 import java.util.*;
@@ -75,7 +73,7 @@ public class JdbcFileRepository implements FileRepository {
     @Override
     public StoredFile findById(String id, Owner owner) {
         return jdbcTemplate.query(
-                "SELECT id, name, path, type, content, size FROM file WHERE LOWER(id) = LOWER(?) " +
+                "SELECT id, name, path, type, size FROM file WHERE LOWER(id) = LOWER(?) " +
                         "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
                 rs -> {
                     if (rs.next()) {
@@ -84,13 +82,28 @@ public class JdbcFileRepository implements FileRepository {
                                 rs.getString("name"),
                                 Path.of(rs.getString("path")),
                                 FileType.valueOf(rs.getString("type")),
-                                rs.getBinaryStream("content"),
                                 rs.getLong("size"));
                     } else {
                         return null;
                     }
                 },
                 id, owner.getId());
+    }
+
+    @Override
+    public FileContent findContent(StoredFile file) {
+        InputStream in = jdbcTemplate.query(
+                "SELECT content FROM file WHERE LOWER(id) = LOWER(?) ",
+                rs -> {
+                    if (rs.next()) {
+                        return rs.getBinaryStream("content");
+                    } else {
+                        return null;
+                    }
+                },
+                file.getId().toString()
+        );
+        return new FileContent(file, in);
     }
 
     @Override
@@ -133,13 +146,14 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public void save(StoredFile file) {
+    public void save(FileContent fileContent) {
+        StoredFile file = fileContent.getFile();
         jdbcTemplate.update(
                 "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)",
                 ps -> {
                     ps.setString(1, file.getId().toString());
                     ps.setString(2, file.getName());
-                    ps.setBinaryStream(3, file.getContent());
+                    ps.setBinaryStream(3, fileContent.getStream());
                     ps.setLong(4, file.getSize());
                     ps.setString(5, file.getPath().toString() + "/");
                     ps.setObject(6, file.getType(), Types.OTHER);

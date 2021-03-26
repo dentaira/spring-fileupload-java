@@ -53,12 +53,10 @@ public class FileService {
                     multipartFile.getOriginalFilename(),
                     parentPath.resolve(fileId.toString()),
                     FileType.FILE,
-                    in,
                     multipartFile.getSize()
             );
 
-            fileRepository.save(file);
-
+            fileRepository.save(new FileContent(file, in));
             fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
 
         } catch (IOException e) {
@@ -69,6 +67,12 @@ public class FileService {
     @Transactional(readOnly = true)
     public StoredFile findById(String fileId, Owner owner) {
         return fileRepository.findById(fileId, owner);
+    }
+
+    @Transactional(readOnly = true)
+    public FileContent findContentById(String fileId, Owner owner) {
+        StoredFile file = findById(fileId, owner);
+        return fileRepository.findContent(file);
     }
 
     /**
@@ -93,11 +97,10 @@ public class FileService {
                 name,
                 parentPath.resolve(fileId.toString()),
                 FileType.DIRECTORY,
-                null,
                 0L
         );
 
-        fileRepository.save(file);
+        fileRepository.save(new FileContent(file, null));
 
         fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
     }

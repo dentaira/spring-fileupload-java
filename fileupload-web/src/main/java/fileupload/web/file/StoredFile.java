@@ -1,6 +1,5 @@
 package fileupload.web.file;
 
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -19,22 +18,14 @@ public class StoredFile {
 
     private final FileType type;
 
-    private final InputStream content;
-
     private final long size;
 
-    public StoredFile(UUID id, String name, Path path, FileType type, InputStream content, long size) {
+    public StoredFile(UUID id, String name, Path path, FileType type, long size) {
         this.id = id;
         this.name = name;
         this.path = path;
         this.type = type;
-        this.content = content;
         this.size = size;
-    }
-
-    public StoredFile(UUID id, String name, Path path, FileType type, long size) {
-        // TODO ファイルのコンテンツそのものとメタデータはドメインオブジェクトとして分けるべきか？
-        this(id, name, path, type, null, size);
     }
 
     public UUID getId() {
@@ -51,10 +42,6 @@ public class StoredFile {
 
     public FileType getType() {
         return type;
-    }
-
-    public InputStream getContent() {
-        return content;
     }
 
     public long getSize() {

@@ -1,10 +1,9 @@
 package fileupload.web.file.web;
 
+import fileupload.web.file.FileContent;
 import fileupload.web.file.FileService;
 import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -55,9 +54,9 @@ public class UploadController {
 
     @GetMapping("download/{fileId}")
     public String download(@PathVariable String fileId, Model model, Owner owner) {
-        StoredFile downloadFile = fileService.findById(fileId, owner);
-        model.addAttribute("downloadFile", downloadFile);
-        return "storedFileDownloadView";
+        FileContent fileContent = fileService.findContentById(fileId, owner);
+        model.addAttribute("downloadFile", fileContent);
+        return "contentDownloadView";
     }
 
     @PostMapping({"upload", "upload/{currentDir}"})
