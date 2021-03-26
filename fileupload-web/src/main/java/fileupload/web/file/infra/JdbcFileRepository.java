@@ -105,4 +105,13 @@ public class JdbcFileRepository implements FileRepository {
                 }
         );
     }
+
+    @Override
+    public void delete(StoredFile file) {
+        if (file.getType() == FileType.FILE) {
+            jdbcTemplate.update("DELETE FROM file WHERE LOWER(id) = LOWER(?)", file.getId().toString());
+        } else {
+            jdbcTemplate.update("DELETE FROM file WHERE path LIKE ? || '%'", file.getPath().toString() + "/");
+        }
+    }
 }

@@ -103,13 +103,22 @@ public class FileService {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(String fileId) {
-        FileType type = jdbcTemplate.queryForObject("SELECT type FROM file WHERE id = ?", FileType.class, fileId);
-        if (type == FileType.FILE) {
-            jdbcTemplate.update("DELETE FROM file WHERE id = ?", fileId);
-        } else {
-            Path path = findPathById(fileId);
-            jdbcTemplate.update("DELETE FROM file WHERE path LIKE ? || '%'", path.toString() + "/");
-        }
+        StoredFile file = jdbcTemplate.query(
+                "SELECT id, name, path, type, size FROM file WHERE LOWER(id) = LOWER(?)",
+                rs -> {
+                    if (rs.next()) {
+                        return new StoredFile(
+                                UUID.fromString(rs.getString("id")),
+                                rs.getString("name"),
+                                Path.of(rs.getString("path")),
+                                FileType.valueOf(rs.getString("type")),
+                                rs.getLong("size"));
+                    } else {
+                        return null;
+                    }
+                },
+                fileId);
+        fileRepository.delete(file);
     }
 
     @Transactional(readOnly = true)
