@@ -188,6 +188,44 @@ class JdbcFileRepositoryTest {
             assertThat(actual).isNull();
         }
     }
+    @Nested
+    @JdbcTest
+    @DatabaseRiderTest
+    @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+    @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchForAncestorsTest/setup-searchForAncestors.yml")
+    @DisplayName("searchForAncestorsは祖先フォルダ全てのListを返す")
+    class SearchForAncestorsTest {
+
+        @Test
+        void testFindTwo() {
+            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13";
+            var file = new StoredFile(
+                    UUID.fromString(param),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13/"),
+                    FileType.FILE,
+                    12L
+            );
+            List<StoredFile> actual = sut.searchForAncestors(file);
+            assertEquals(2, actual.size());
+            assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"), actual.get(0).getId());
+            assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12"), actual.get(1).getId());
+        }
+
+        @Test
+        void whenFileUnderRootThenReturnEmptyList() {
+            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11";
+            var file = new StoredFile(
+                    UUID.fromString(param),
+                    "name",
+                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
+                    FileType.FILE,
+                    0L
+            );
+            List<StoredFile> actual = sut.searchForAncestors(file);
+            assertEquals(0, actual.size());
+        }
+    }
 
     @Nested
     @JdbcTest

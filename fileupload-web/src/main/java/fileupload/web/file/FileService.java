@@ -1,6 +1,5 @@
 package fileupload.web.file;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,12 +11,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FileService {
-
-    public static final Path ROOT_PATH = Path.of("/");
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -73,6 +71,9 @@ public class FileService {
         return fileRepository.findById(fileId, owner);
     }
 
+    /**
+     * TODO findById に置き換える。
+     */
     @Transactional(readOnly = true)
     public Path findPathById(String fileId) {
         return jdbcTemplate.query(
@@ -103,6 +104,7 @@ public class FileService {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(String fileId) {
+        // TODO findById に置き換える。
         StoredFile file = jdbcTemplate.query(
                 "SELECT id, name, path, type, size FROM file WHERE LOWER(id) = LOWER(?)",
                 rs -> {
@@ -127,41 +129,15 @@ public class FileService {
         // パスを取得
         Path path = findPathById(fileId);
 
-        if (path.getParent().equals(ROOT_PATH)) {
-            return Collections.emptyList();
-        }
-
-        // パラメータとプレースホルダーを作成
-        var params = new ArrayList<String>();
-        var placeholders = new ArrayList<String>();
-        for (Iterator<Path> itr = path.getParent().iterator(); itr.hasNext(); ) {
-            Path p = itr.next();
-            params.add(p.toString());
-            placeholders.add("?");
-        }
-
-        // SQLを作成
-        var sql = new StringBuilder("SELECT id, name, path, type, size FROM file WHERE id IN (");
-        String in = StringUtils.join(placeholders, ", ");
-        sql.append(in).append(")");
-        sql.append("ORDER BY char_length(path)");
-
-        // SQL実行
-        return jdbcTemplate.query(sql.toString(),
-                ps -> {
-                    for (int i = 0; i < params.size(); i++) {
-                        ps.setString(i + 1, params.get(i));
-                    }
-                },
-                (rs, rowNum) -> {
-                    return new StoredFile(
-                            UUID.fromString(rs.getString("id")),
-                            rs.getString("name"),
-                            Path.of(rs.getString("path")),
-                            FileType.valueOf(rs.getString("type")),
-                            rs.getLong("size")
-                    );
-                });
+        // TODO id と path 以外は適当。
+        var file = new StoredFile(
+                UUID.fromString(fileId),
+                "name",
+                path,
+                null,
+                0L
+        );
+        return fileRepository.searchForAncestors(file);
     }
 }
 

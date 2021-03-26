@@ -10,6 +10,8 @@ public interface FileRepository {
 
     public StoredFile findById(String id, Owner owner);
 
+    public List<StoredFile> searchForAncestors(StoredFile file);
+
     public void save(StoredFile file);
 
     public void delete(StoredFile file);
