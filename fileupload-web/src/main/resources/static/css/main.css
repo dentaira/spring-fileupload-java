@@ -40,6 +40,9 @@ a:hover {
 
 /* ヘッダー */
 .header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .header-logo {
     margin: 0;
