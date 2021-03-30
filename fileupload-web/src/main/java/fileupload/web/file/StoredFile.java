@@ -18,9 +18,9 @@ public class StoredFile {
 
     private final FileType type;
 
-    private final long size;
+    private final DataSize size;
 
-    public StoredFile(UUID id, String name, Path path, FileType type, long size) {
+    public StoredFile(UUID id, String name, Path path, FileType type, DataSize size) {
         this.id = id;
         this.name = name;
         this.path = path;
@@ -44,30 +44,12 @@ public class StoredFile {
         return type;
     }
 
-    public long getSize() {
+    public DataSize getSize() {
         return size;
     }
 
-    public static final long ONE_KILOBYTE = 1024L;
-    public static final long ONE_MEGABYTE = ONE_KILOBYTE * ONE_KILOBYTE;
-    public static final long ONE_GIGABYTE = ONE_MEGABYTE * ONE_KILOBYTE;
-
     public String displaySize() {
-
-        if (type == FileType.DIRECTORY) {
-            return "";
-        }
-
-        // TODO 少数桁まで出力したい
-        if (size < ONE_KILOBYTE) {
-            return size + "B";
-        } else if (ONE_KILOBYTE <= size && size < ONE_MEGABYTE) {
-            return size / ONE_KILOBYTE + "KB";
-        } else if (ONE_MEGABYTE <= size && size < ONE_GIGABYTE) {
-            return size / ONE_MEGABYTE + "MB";
-        } else {
-            return size / ONE_GIGABYTE + "GB";
-        }
+        return isFile() ? getSize().toString() : "";
     }
 
     public boolean isFile() {

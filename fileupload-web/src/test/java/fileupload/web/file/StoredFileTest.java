@@ -12,18 +12,17 @@ class StoredFileTest {
 
     @ParameterizedTest
     @CsvSource({
-            "1,             1B",
-            "2,             2B",
-            "1023,          1023B",
-            "1024,          1KB",
-            "1047552,       1023KB",
-            "1048575,       1023KB", // TODO 1MB-1B 切り捨てより切り上げの方が良いのでは
-            "1048576,       1MB",
-            "1073741823,    1023MB",
-            "1073741824,    1GB",
+            "1,             FILE,       1B",
+            "1024,          FILE,       1KB",
+            "1048576,       FILE,       1MB",
+            "1073741824,    FILE,       1GB",
+            "0,             FILE,       0B",
+            "0,             DIRECTORY,  ''",
+            "1,             DIRECTORY,  ''",
+            "1000,          DIRECTORY,  ''",
     })
-    public void displaySizeはsizeの単位を計算してフォーマットした文字列を返す(long size, String expected) {
-        var sut = new StoredFile(UUID.randomUUID(), "name", Path.of("parent"), FileType.FILE, size);
+    public void testDisplaySize(long size, FileType type, String expected) {
+        var sut = new StoredFile(UUID.randomUUID(), "name", Path.of("parent"), type, DataSize.of(size));
         assertEquals(expected, sut.displaySize());
     }
 }

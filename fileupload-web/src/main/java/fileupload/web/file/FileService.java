@@ -44,7 +44,7 @@ public class FileService {
                     multipartFile.getOriginalFilename(),
                     parentPath.resolve(fileId.toString()),
                     FileType.FILE,
-                    multipartFile.getSize()
+                    DataSize.of(multipartFile.getSize())
             );
 
             fileRepository.save(new FileContent(file, in));
@@ -74,7 +74,7 @@ public class FileService {
                 name,
                 parentPath.resolve(fileId.toString()),
                 FileType.DIRECTORY,
-                0L
+                DataSize.of(0L)
         );
 
         fileRepository.save(new FileContent(file, null));

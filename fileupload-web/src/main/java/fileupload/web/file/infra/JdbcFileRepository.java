@@ -34,7 +34,7 @@ public class JdbcFileRepository implements FileRepository {
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
-                            , rs.getLong("size"));
+                            , DataSize.of(rs.getLong("size")));
                 });
     }
 
@@ -59,7 +59,7 @@ public class JdbcFileRepository implements FileRepository {
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
-                            , rs.getLong("size"));
+                            , DataSize.of(rs.getLong("size")));
                 });
     }
 
@@ -82,7 +82,7 @@ public class JdbcFileRepository implements FileRepository {
                                 rs.getString("name"),
                                 Path.of(rs.getString("path")),
                                 FileType.valueOf(rs.getString("type")),
-                                rs.getLong("size"));
+                                DataSize.of(rs.getLong("size")));
                     } else {
                         return null;
                     }
@@ -140,7 +140,7 @@ public class JdbcFileRepository implements FileRepository {
                             rs.getString("name"),
                             Path.of(rs.getString("path")),
                             FileType.valueOf(rs.getString("type")),
-                            rs.getLong("size")
+                            DataSize.of(rs.getLong("size"))
                     );
                 });
     }
@@ -154,7 +154,7 @@ public class JdbcFileRepository implements FileRepository {
                     ps.setString(1, file.getId().toString());
                     ps.setString(2, file.getName());
                     ps.setBinaryStream(3, fileContent.getStream());
-                    ps.setLong(4, file.getSize());
+                    ps.setLong(4, file.getSize().toLong());
                     ps.setString(5, file.getPath().toString() + "/");
                     ps.setObject(6, file.getType(), Types.OTHER);
                 }

@@ -2,10 +2,7 @@ package fileupload.web.file.infra;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import fileupload.web.file.FileContent;
-import fileupload.web.file.FileType;
-import fileupload.web.file.Owner;
-import fileupload.web.file.StoredFile;
+import fileupload.web.file.*;
 import fileupload.web.test.annotation.DatabaseRiderTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -126,7 +122,7 @@ class JdbcFileRepositoryTest {
                     "フォルダ１",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
                     FileType.DIRECTORY,
-                    0L);
+                    DataSize.of(0L));
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
@@ -143,7 +139,7 @@ class JdbcFileRepositoryTest {
                     "ファイル４",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
                     FileType.FILE,
-                    3L);
+                    DataSize.of(3L));
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
@@ -189,7 +185,7 @@ class JdbcFileRepositoryTest {
                     "name",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13/"),
                     FileType.FILE,
-                    12L
+                    DataSize.of(12L)
             );
             List<StoredFile> actual = sut.searchForAncestors(file);
             assertEquals(2, actual.size());
@@ -205,7 +201,7 @@ class JdbcFileRepositoryTest {
                     "name",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
                     FileType.FILE,
-                    0L
+                    DataSize.of(0L)
             );
             List<StoredFile> actual = sut.searchForAncestors(file);
             assertEquals(0, actual.size());
@@ -230,7 +226,7 @@ class JdbcFileRepositoryTest {
                     "Bible",
                     Path.of("/parent/" + id.toString() + "/"),
                     FileType.FILE,
-                    3L
+                    DataSize.of(3L)
             );
             var fileContent = new FileContent(file, new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)));
             // when
@@ -247,7 +243,7 @@ class JdbcFileRepositoryTest {
                     "Pandora",
                     Path.of("/parent/" + id.toString() + "/"),
                     FileType.DIRECTORY,
-                    0L
+                    DataSize.of(0L)
             );
             // when
             sut.save(new FileContent(file, null));
@@ -271,7 +267,7 @@ class JdbcFileRepositoryTest {
                     "name",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12/"),
                     FileType.FILE,
-                    2L);
+                    DataSize.of(2L));
             // when
             sut.delete(file);
         }
@@ -285,7 +281,7 @@ class JdbcFileRepositoryTest {
                     "name",
                     Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
                     FileType.DIRECTORY,
-                    0L);
+                    DataSize.of(0L));
             // when
             sut.delete(file);
         }
