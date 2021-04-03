@@ -1,5 +1,6 @@
 package fileupload.web.file;
 
+import fileupload.web.test.builder.TestStoredFileBuilder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -22,7 +23,10 @@ class StoredFileTest {
             "1000,          DIRECTORY,  ''",
     })
     public void testDisplaySize(long size, FileType type, String expected) {
-        var sut = new StoredFile(UUID.randomUUID(), "name", Path.of("parent"), type, DataSize.of(size));
+        var sut = new TestStoredFileBuilder()
+                .withType(type)
+                .withSize(DataSize.of(size))
+                .build();
         assertEquals(expected, sut.displaySize());
     }
 }

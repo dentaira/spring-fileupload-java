@@ -4,6 +4,7 @@ import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
 import fileupload.web.file.*;
 import fileupload.web.test.annotation.DatabaseRiderTest;
+import fileupload.web.test.builder.TestStoredFileBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -117,15 +118,16 @@ class JdbcFileRepositoryTest {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
-            StoredFile expected = new StoredFile(
-                    fileId,
-                    "フォルダ１",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
-                    FileType.DIRECTORY,
-                    DataSize.of(0L));
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
+            StoredFile expected = new TestStoredFileBuilder()
+                    .withId(fileId)
+                    .withName("フォルダ１")
+                    .withPath(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"))
+                    .withType(FileType.DIRECTORY)
+                    .withSize(DataSize.of(0L))
+                    .build();
             assertThat(actual).isEqualToComparingFieldByField(expected);
         }
 
@@ -134,15 +136,16 @@ class JdbcFileRepositoryTest {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
-            StoredFile expected = new StoredFile(
-                    fileId,
-                    "ファイル４",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"),
-                    FileType.FILE,
-                    DataSize.of(3L));
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
+            StoredFile expected = new TestStoredFileBuilder()
+                    .withId(fileId)
+                    .withName("ファイル４")
+                    .withPath(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"))
+                    .withType(FileType.FILE)
+                    .withSize(DataSize.of(3L))
+                    .build();
             assertThat(actual).isEqualToIgnoringGivenFields(expected);
         }
 
@@ -179,15 +182,12 @@ class JdbcFileRepositoryTest {
 
         @Test
         void testFindTwo() {
-            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13";
-            var file = new StoredFile(
-                    UUID.fromString(param),
-                    "name",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13/"),
-                    FileType.FILE,
-                    DataSize.of(12L)
-            );
+            // given
+            Path path = Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B13/");
+            StoredFile file = new TestStoredFileBuilder().withPath(path).build();
+            // when
             List<StoredFile> actual = sut.searchForAncestors(file);
+            // then
             assertEquals(2, actual.size());
             assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"), actual.get(0).getId());
             assertEquals(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B12"), actual.get(1).getId());
@@ -195,15 +195,12 @@ class JdbcFileRepositoryTest {
 
         @Test
         void whenFileUnderRootThenReturnEmptyList() {
-            var param = "A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11";
-            var file = new StoredFile(
-                    UUID.fromString(param),
-                    "name",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
-                    FileType.FILE,
-                    DataSize.of(0L)
-            );
+            // given
+            Path path = Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/");
+            StoredFile file = new TestStoredFileBuilder().withPath(path).build();
+            // when
             List<StoredFile> actual = sut.searchForAncestors(file);
+            // then
             assertEquals(0, actual.size());
         }
     }
@@ -220,14 +217,13 @@ class JdbcFileRepositoryTest {
         @ExpectedDataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SaveTest/expected-testSaveBible.yml")
         void testSaveBible() {
             // given
-            UUID id = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
-            var file = new StoredFile(
-                    id,
-                    "Bible",
-                    Path.of("/parent/" + id.toString() + "/"),
-                    FileType.FILE,
-                    DataSize.of(3L)
-            );
+            StoredFile file = new TestStoredFileBuilder()
+                    .withId(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"))
+                    .withName("Bible")
+                    .withPath(Path.of("/parent/" + UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11").toString() + "/"))
+                    .withType(FileType.FILE)
+                    .withSize(DataSize.of(3L))
+                    .build();
             var fileContent = new FileContent(file, new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)));
             // when
             sut.save(fileContent);
@@ -237,14 +233,13 @@ class JdbcFileRepositoryTest {
         @ExpectedDataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SaveTest/expected-testSavePandora.yml")
         void testSavePandora() {
             // given
-            UUID id = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12");
-            var file = new StoredFile(
-                    id,
-                    "Pandora",
-                    Path.of("/parent/" + id.toString() + "/"),
-                    FileType.DIRECTORY,
-                    DataSize.of(0L)
-            );
+            StoredFile file = new TestStoredFileBuilder()
+                    .withId(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12"))
+                    .withName("Pandora")
+                    .withPath(Path.of("/parent/" + UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12").toString() + "/"))
+                    .withType(FileType.DIRECTORY)
+                    .withSize(DataSize.of(0L))
+                    .build();
             // when
             sut.save(new FileContent(file, null));
         }
@@ -263,11 +258,10 @@ class JdbcFileRepositoryTest {
         @DisplayName("削除するFileのtypeがFileの場合は指定したFileのみ削除する")
         void testDeleteFile() {
             // given
-            var file = new StoredFile(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12"),
-                    "name",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12/"),
-                    FileType.FILE,
-                    DataSize.of(2L));
+            StoredFile file = new TestStoredFileBuilder()
+                    .withId(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A12"))
+                    .withType(FileType.FILE)
+                    .build();
             // when
             sut.delete(file);
         }
@@ -277,11 +271,11 @@ class JdbcFileRepositoryTest {
         @DisplayName("削除するFileのtypeがFolderの場合は指定したFileと配下のFile全てを削除する")
         void testDeleteFolder() {
             // given
-            var file = new StoredFile(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"),
-                    "name",
-                    Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"),
-                    FileType.DIRECTORY,
-                    DataSize.of(0L));
+            StoredFile file = new TestStoredFileBuilder()
+                    .withId(UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11"))
+                    .withPath(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"))
+                    .withType(FileType.DIRECTORY)
+                    .build();
             // when
             sut.delete(file);
         }
