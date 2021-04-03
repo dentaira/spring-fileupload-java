@@ -22,6 +22,11 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
+    public UUID generateId() {
+        return UUID.randomUUID();
+    }
+
+    @Override
     public List<StoredFile> searchRoot(Owner owner) {
         return jdbcTemplate.query(
                 "SELECT id, name, path, type, size " +

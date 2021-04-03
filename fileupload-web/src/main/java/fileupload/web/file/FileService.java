@@ -38,7 +38,7 @@ public class FileService {
         // TODO MultipartFileに依存しないようにする
 
         try (InputStream in = multipartFile.getInputStream()) {
-            var fileId = UUID.randomUUID();
+            var fileId = fileRepository.generateId();
             var file = new StoredFile(
                     fileId,
                     multipartFile.getOriginalFilename(),
@@ -68,7 +68,7 @@ public class FileService {
 
     @Transactional(rollbackFor = Exception.class)
     public void createDirectory(String name, Path parentPath, Owner owner) {
-        var fileId = UUID.randomUUID();
+        var fileId = fileRepository.generateId();
         var file = new StoredFile(
                 fileId,
                 name,

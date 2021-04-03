@@ -1,8 +1,11 @@
 package fileupload.web.file;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface FileRepository {
+
+    public UUID generateId();
 
     public List<StoredFile> searchRoot(Owner owner);
 
