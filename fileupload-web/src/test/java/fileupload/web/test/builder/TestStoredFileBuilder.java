@@ -4,6 +4,8 @@ import fileupload.web.file.DataSize;
 import fileupload.web.file.FileType;
 import fileupload.web.file.StoredFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -17,10 +19,12 @@ public class TestStoredFileBuilder {
 
     private FileType type = FileType.FILE;
 
+    private InputStream content = new ByteArrayInputStream(new byte[]{});
+
     private DataSize size = DataSize.of(0L);
 
     public StoredFile build() {
-        return new StoredFile(id, name, path, type, size);
+        return new StoredFile(id, name, path, type, content, size);
     }
 
     public TestStoredFileBuilder withId(UUID id) {

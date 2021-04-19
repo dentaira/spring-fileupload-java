@@ -17,8 +17,11 @@ public class JdbcFileRepository implements FileRepository {
 
     private JdbcTemplate jdbcTemplate;
 
-    public JdbcFileRepository(JdbcTemplate jdbcTemplate) {
+    private FileMapper fileMapper;
+
+    public JdbcFileRepository(JdbcTemplate jdbcTemplate, FileMapper fileMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.fileMapper = fileMapper;
     }
 
     @Override
@@ -39,6 +42,7 @@ public class JdbcFileRepository implements FileRepository {
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
+                            , null
                             , DataSize.of(rs.getLong("size")));
                 });
     }
@@ -64,6 +68,7 @@ public class JdbcFileRepository implements FileRepository {
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
+                            , null
                             , DataSize.of(rs.getLong("size")));
                 });
     }
@@ -77,22 +82,7 @@ public class JdbcFileRepository implements FileRepository {
 
     @Override
     public StoredFile findById(String id, Owner owner) {
-        return jdbcTemplate.query(
-                "SELECT id, name, path, type, size FROM file WHERE LOWER(id) = LOWER(?) " +
-                        "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
-                rs -> {
-                    if (rs.next()) {
-                        return new StoredFile(
-                                UUID.fromString(rs.getString("id")),
-                                rs.getString("name"),
-                                Path.of(rs.getString("path")),
-                                FileType.valueOf(rs.getString("type")),
-                                DataSize.of(rs.getLong("size")));
-                    } else {
-                        return null;
-                    }
-                },
-                id, owner.getId());
+        return fileMapper.findById(id, owner);
     }
 
     @Override
@@ -145,6 +135,7 @@ public class JdbcFileRepository implements FileRepository {
                             rs.getString("name"),
                             Path.of(rs.getString("path")),
                             FileType.valueOf(rs.getString("type")),
+                            null,
                             DataSize.of(rs.getLong("size"))
                     );
                 });

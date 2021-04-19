@@ -9,12 +9,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mybatis.spring.boot.test.autoconfigure.AutoConfigureMybatis;
+import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -23,19 +28,27 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@JdbcTest
+//@JdbcTest
+@SpringBootTest
 @DatabaseRiderTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+//@AutoConfigureMybatis
 class JdbcFileRepositoryTest {
+
+    @Autowired
+    DataSource dataSource;
 
     JdbcFileRepository sut;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    FileMapper fileMapper;
+
     @BeforeEach
     void setUp() {
-        sut = new JdbcFileRepository(jdbcTemplate);
+        sut = new JdbcFileRepository(jdbcTemplate, fileMapper);
     }
 
     @Nested
