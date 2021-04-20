@@ -1,5 +1,6 @@
 package fileupload.web.file;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.UUID;
 
@@ -7,13 +8,15 @@ public class StoredFile {
 
     private final UUID id;
 
-    private final String name;
+    private String name;
 
-    private final Path path;
+    private Path path;
 
-    private final FileType type;
+    private FileType type;
 
-    private final DataSize size;
+    private InputStream content;
+
+    private DataSize size;
 
     public StoredFile(UUID id, String name, Path path, FileType type, DataSize size) {
         this.id = id;
@@ -31,16 +34,36 @@ public class StoredFile {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Path getPath() {
         return path;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 
     public FileType getType() {
         return type;
     }
 
+    public InputStream getContent() {
+        return content;
+    }
+
+    public void setContent(InputStream content) {
+        this.content = content;
+    }
+
     public DataSize getSize() {
         return size;
+    }
+
+    public void setSize(DataSize size) {
+        this.size = size;
     }
 
     public String displaySize() {

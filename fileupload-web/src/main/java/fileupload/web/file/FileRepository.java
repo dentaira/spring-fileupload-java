@@ -13,11 +13,9 @@ public interface FileRepository {
 
     public StoredFile findById(String id, Owner owner);
 
-    public FileContent findContent(StoredFile file);
-
     public List<StoredFile> searchForAncestors(StoredFile file);
 
-    public void save(FileContent fileContent);
+    public void save(StoredFile file);
 
     public void delete(StoredFile file);
 }

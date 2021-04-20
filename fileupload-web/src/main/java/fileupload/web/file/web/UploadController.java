@@ -1,6 +1,5 @@
 package fileupload.web.file.web;
 
-import fileupload.web.file.FileContent;
 import fileupload.web.file.FileService;
 import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
@@ -53,8 +52,8 @@ public class UploadController {
 
     @GetMapping("download/{fileId}")
     public String download(@PathVariable String fileId, Model model, Owner owner) {
-        FileContent fileContent = fileService.findContentById(fileId, owner);
-        model.addAttribute("downloadFile", fileContent);
+        StoredFile file = fileService.findById(fileId, owner);
+        model.addAttribute("downloadFile", file);
         return "contentDownloadView";
     }
 

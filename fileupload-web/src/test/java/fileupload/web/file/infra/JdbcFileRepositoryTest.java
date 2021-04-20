@@ -2,18 +2,26 @@ package fileupload.web.file.infra;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import fileupload.web.file.*;
+import fileupload.web.file.DataSize;
+import fileupload.web.file.FileType;
+import fileupload.web.file.Owner;
+import fileupload.web.file.StoredFile;
 import fileupload.web.test.annotation.DatabaseRiderTest;
 import fileupload.web.test.builder.TestStoredFileBuilder;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mybatis.spring.boot.test.autoconfigure.AutoConfigureMybatis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -24,22 +32,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
+@AutoConfigureMybatis
 @DatabaseRiderTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class JdbcFileRepositoryTest {
+
+    @Autowired
+    DataSource dataSource;
 
     JdbcFileRepository sut;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    FileMapper fileMapper;
+
     @BeforeEach
     void setUp() {
-        sut = new JdbcFileRepository(jdbcTemplate);
+        sut = new JdbcFileRepository(jdbcTemplate, fileMapper);
     }
 
     @Nested
     @JdbcTest
+    @AutoConfigureMybatis
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DisplayName("searchRoot(UserAccount)はUserAccountが所有するRoot直下のFileを取得する")
@@ -66,6 +82,7 @@ class JdbcFileRepositoryTest {
 
     @Nested
     @JdbcTest
+    @AutoConfigureMybatis
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchTest/setup-search.yml")
@@ -107,46 +124,46 @@ class JdbcFileRepositoryTest {
 
     @Nested
     @JdbcTest
+    @AutoConfigureMybatis
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/FindByIdTest/setup-findById.yml")
+    @ExtendWith(SoftAssertionsExtension.class)
     @DisplayName("findById(String,Owner)はOwnerが所有するidが一致するFileを取得する")
     class FindByIdTest {
 
         @Test
-        void testFindOneDirectory() {
+        void testFindOneDirectory(SoftAssertions softly) {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A13"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
-            StoredFile expected = new TestStoredFileBuilder()
-                    .withId(fileId)
-                    .withName("フォルダ１")
-                    .withPath(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"))
-                    .withType(FileType.DIRECTORY)
-                    .withSize(DataSize.of(0L))
-                    .build();
-            assertThat(actual).isEqualToComparingFieldByField(expected);
+            softly.assertThat(actual.getId()).isEqualTo(fileId);
+            softly.assertThat(actual.getName()).isEqualTo("フォルダ１");
+            softly.assertThat(actual.getPath()).isEqualTo(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/"));
+            softly.assertThat(actual.getType()).isEqualTo(FileType.DIRECTORY);
+            softly.assertThat(actual.getSize()).isEqualTo(DataSize.of(0L));
+            softly.assertThat(actual.getContent()).isNull();
         }
 
         @Test
-        void testFindOneFile() {
+        void testFindOneFile(SoftAssertions softly) throws Exception {
             // given
             var owner = new Owner(UUID.fromString("B0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A14"));
             UUID fileId = UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11");
             // when
             StoredFile actual = sut.findById(fileId.toString(), owner);
             // then
-            StoredFile expected = new TestStoredFileBuilder()
-                    .withId(fileId)
-                    .withName("ファイル４")
-                    .withPath(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"))
-                    .withType(FileType.FILE)
-                    .withSize(DataSize.of(3L))
-                    .build();
-            assertThat(actual).isEqualToIgnoringGivenFields(expected);
+            softly.assertThat(actual.getId()).isEqualTo(fileId);
+            softly.assertThat(actual.getName()).isEqualTo("ファイル４");
+            softly.assertThat(actual.getPath()).isEqualTo(Path.of("/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11/A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380B11/"));
+            softly.assertThat(actual.getType()).isEqualTo(FileType.FILE);
+            softly.assertThat(actual.getSize()).isEqualTo(DataSize.of(3L));
+            try (var in = actual.getContent()) {
+                softly.assertThat(in).hasContent("file4 content");
+            }
         }
 
         @Test
@@ -174,6 +191,7 @@ class JdbcFileRepositoryTest {
 
     @Nested
     @JdbcTest
+    @AutoConfigureMybatis
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SearchForAncestorsTest/setup-searchForAncestors.yml")
@@ -207,6 +225,7 @@ class JdbcFileRepositoryTest {
 
     @Nested
     @JdbcTest
+    @AutoConfigureMybatis
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/SaveTest/setup-save.yml")
@@ -223,10 +242,10 @@ class JdbcFileRepositoryTest {
                     .withPath(Path.of("/parent/" + UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11").toString() + "/"))
                     .withType(FileType.FILE)
                     .withSize(DataSize.of(3L))
+                    .withContent(new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)))
                     .build();
-            var fileContent = new FileContent(file, new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)));
             // when
-            sut.save(fileContent);
+            sut.save(file);
         }
 
         @Test
@@ -241,12 +260,13 @@ class JdbcFileRepositoryTest {
                     .withSize(DataSize.of(0L))
                     .build();
             // when
-            sut.save(new FileContent(file, null));
+            sut.save(file);
         }
     }
 
     @Nested
     @JdbcTest
+    @AutoConfigureMybatis
     @DatabaseRiderTest
     @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
     @DataSet("fileupload/web/file/infra/JdbcFileRepositoryTest-data/DeleteTest/setup-delete.yml")

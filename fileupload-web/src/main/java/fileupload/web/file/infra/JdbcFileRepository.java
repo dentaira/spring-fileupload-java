@@ -17,8 +17,11 @@ public class JdbcFileRepository implements FileRepository {
 
     private JdbcTemplate jdbcTemplate;
 
-    public JdbcFileRepository(JdbcTemplate jdbcTemplate) {
+    private FileMapper fileMapper;
+
+    public JdbcFileRepository(JdbcTemplate jdbcTemplate, FileMapper fileMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.fileMapper = fileMapper;
     }
 
     @Override
@@ -77,38 +80,7 @@ public class JdbcFileRepository implements FileRepository {
 
     @Override
     public StoredFile findById(String id, Owner owner) {
-        return jdbcTemplate.query(
-                "SELECT id, name, path, type, size FROM file WHERE LOWER(id) = LOWER(?) " +
-                        "AND id IN(SELECT file_id FROM file_ownership WHERE owned_at = ?)",
-                rs -> {
-                    if (rs.next()) {
-                        return new StoredFile(
-                                UUID.fromString(rs.getString("id")),
-                                rs.getString("name"),
-                                Path.of(rs.getString("path")),
-                                FileType.valueOf(rs.getString("type")),
-                                DataSize.of(rs.getLong("size")));
-                    } else {
-                        return null;
-                    }
-                },
-                id, owner.getId());
-    }
-
-    @Override
-    public FileContent findContent(StoredFile file) {
-        InputStream in = jdbcTemplate.query(
-                "SELECT content FROM file WHERE LOWER(id) = LOWER(?) ",
-                rs -> {
-                    if (rs.next()) {
-                        return rs.getBinaryStream("content");
-                    } else {
-                        return null;
-                    }
-                },
-                file.getId().toString()
-        );
-        return new FileContent(file, in);
+        return fileMapper.findById(id, owner);
     }
 
     @Override
@@ -151,14 +123,13 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public void save(FileContent fileContent) {
-        StoredFile file = fileContent.getFile();
+    public void save(StoredFile file) {
         jdbcTemplate.update(
                 "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)",
                 ps -> {
                     ps.setString(1, file.getId().toString());
                     ps.setString(2, file.getName());
-                    ps.setBinaryStream(3, fileContent.getStream());
+                    ps.setBinaryStream(3, file.getContent());
                     ps.setLong(4, file.getSize().toLong());
                     ps.setString(5, file.getPath().toString() + "/");
                     ps.setObject(6, file.getType(), Types.OTHER);
