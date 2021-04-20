@@ -84,22 +84,6 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public FileContent findContent(StoredFile file) {
-        InputStream in = jdbcTemplate.query(
-                "SELECT content FROM file WHERE LOWER(id) = LOWER(?) ",
-                rs -> {
-                    if (rs.next()) {
-                        return rs.getBinaryStream("content");
-                    } else {
-                        return null;
-                    }
-                },
-                file.getId().toString()
-        );
-        return new FileContent(file, in);
-    }
-
-    @Override
     public List<StoredFile> searchForAncestors(StoredFile file) {
 
         if (file.getPath().getParent().equals(ROOT_PATH)) {
@@ -139,14 +123,13 @@ public class JdbcFileRepository implements FileRepository {
     }
 
     @Override
-    public void save(FileContent fileContent) {
-        StoredFile file = fileContent.getFile();
+    public void save(StoredFile file) {
         jdbcTemplate.update(
                 "INSERT INTO file(id, name, content, size, path, type) VALUES(?, ?, ?, ?, ?, ?)",
                 ps -> {
                     ps.setString(1, file.getId().toString());
                     ps.setString(2, file.getName());
-                    ps.setBinaryStream(3, fileContent.getStream());
+                    ps.setBinaryStream(3, file.getContent());
                     ps.setLong(4, file.getSize().toLong());
                     ps.setString(5, file.getPath().toString() + "/");
                     ps.setObject(6, file.getType(), Types.OTHER);

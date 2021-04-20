@@ -46,8 +46,9 @@ public class FileService {
                     FileType.FILE,
                     DataSize.of(multipartFile.getSize())
             );
+            file.setContent(in);
 
-            fileRepository.save(new FileContent(file, in));
+            fileRepository.save(file);
             fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
 
         } catch (IOException e) {
@@ -58,12 +59,6 @@ public class FileService {
     @Transactional(readOnly = true)
     public StoredFile findById(String fileId, Owner owner) {
         return fileRepository.findById(fileId, owner);
-    }
-
-    @Transactional(readOnly = true)
-    public FileContent findContentById(String fileId, Owner owner) {
-        StoredFile file = findById(fileId, owner);
-        return fileRepository.findContent(file);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -77,8 +72,7 @@ public class FileService {
                 DataSize.of(0L)
         );
 
-        fileRepository.save(new FileContent(file, null));
-
+        fileRepository.save(file);
         fileOwnershipRepository.create(fileId, owner.getId(), "READ_AND_WRITE");
     }
 

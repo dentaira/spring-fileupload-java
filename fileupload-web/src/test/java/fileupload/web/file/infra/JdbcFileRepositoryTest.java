@@ -2,7 +2,10 @@ package fileupload.web.file.infra;
 
 import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.core.api.dataset.ExpectedDataSet;
-import fileupload.web.file.*;
+import fileupload.web.file.DataSize;
+import fileupload.web.file.FileType;
+import fileupload.web.file.Owner;
+import fileupload.web.file.StoredFile;
 import fileupload.web.test.annotation.DatabaseRiderTest;
 import fileupload.web.test.builder.TestStoredFileBuilder;
 import org.assertj.core.api.SoftAssertions;
@@ -13,17 +16,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mybatis.spring.boot.test.autoconfigure.AutoConfigureMybatis;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -243,10 +242,10 @@ class JdbcFileRepositoryTest {
                     .withPath(Path.of("/parent/" + UUID.fromString("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11").toString() + "/"))
                     .withType(FileType.FILE)
                     .withSize(DataSize.of(3L))
+                    .withContent(new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)))
                     .build();
-            var fileContent = new FileContent(file, new ByteArrayInputStream("content".getBytes(StandardCharsets.UTF_8)));
             // when
-            sut.save(fileContent);
+            sut.save(file);
         }
 
         @Test
@@ -261,7 +260,7 @@ class JdbcFileRepositoryTest {
                     .withSize(DataSize.of(0L))
                     .build();
             // when
-            sut.save(new FileContent(file, null));
+            sut.save(file);
         }
     }
 
