@@ -1,4 +1,4 @@
-package fileupload.web.infra.mybatis;
+package fileupload.web.infra.mybatis.type;
 
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;

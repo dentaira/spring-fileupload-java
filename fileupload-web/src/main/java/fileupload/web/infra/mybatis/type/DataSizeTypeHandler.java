@@ -1,4 +1,4 @@
-package fileupload.web.infra.mybatis;
+package fileupload.web.infra.mybatis.type;
 
 import fileupload.web.file.DataSize;
 import org.apache.ibatis.type.BaseTypeHandler;

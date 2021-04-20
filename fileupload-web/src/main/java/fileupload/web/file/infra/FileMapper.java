@@ -2,9 +2,9 @@ package fileupload.web.file.infra;
 
 import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
-import fileupload.web.infra.mybatis.ByteArrayInputStreamTypeHandler;
-import fileupload.web.infra.mybatis.DataSizeTypeHandler;
-import fileupload.web.infra.mybatis.UUIDCharTypeHandler;
+import fileupload.web.infra.mybatis.type.ByteArrayInputStreamTypeHandler;
+import fileupload.web.infra.mybatis.type.DataSizeTypeHandler;
+import fileupload.web.infra.mybatis.type.UUIDCharTypeHandler;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.FetchType;
 import org.apache.ibatis.type.JdbcType;
