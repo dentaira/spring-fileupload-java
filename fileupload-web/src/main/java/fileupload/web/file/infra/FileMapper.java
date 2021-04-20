@@ -2,16 +2,14 @@ package fileupload.web.file.infra;
 
 import fileupload.web.file.Owner;
 import fileupload.web.file.StoredFile;
+import fileupload.web.infra.mybatis.ByteArrayInputStreamTypeHandler;
 import fileupload.web.infra.mybatis.DataSizeTypeHandler;
 import fileupload.web.infra.mybatis.UUIDCharTypeHandler;
-import fileupload.web.infra.mybatis.UUIDTypeHandler;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.mapping.FetchType;
 import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.LongTypeHandler;
 
 import java.io.InputStream;
-import java.util.UUID;
 
 @Mapper
 public interface FileMapper {
@@ -22,8 +20,9 @@ public interface FileMapper {
             @Result(property = "path", column = "path"),
             @Result(property = "type", column = "type"),
             @Result(property = "content", column = "id",
-                    one = @One(select = "findContentById", fetchType = FetchType.LAZY)),
-            @Result(property = "size", column = "size", typeHandler = DataSizeTypeHandler.class)})
+                    one = @One(select = "findContentById", fetchType = FetchType.LAZY), typeHandler = ByteArrayInputStreamTypeHandler.class),
+            @Result(property = "size", column = "size", jdbcType = JdbcType.BIGINT, typeHandler = DataSizeTypeHandler.class),
+    })
     @Select({"SELECT id, name, path, type, size",
             "FROM file WHERE LOWER(id) = LOWER(#{id})",
             "AND id IN(SELECT file_id FROM file_ownership",

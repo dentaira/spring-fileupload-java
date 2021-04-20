@@ -42,7 +42,6 @@ public class JdbcFileRepository implements FileRepository {
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
-                            , null
                             , DataSize.of(rs.getLong("size")));
                 });
     }
@@ -68,7 +67,6 @@ public class JdbcFileRepository implements FileRepository {
                             , rs.getString("name")
                             , Path.of(rs.getString("path"))
                             , FileType.valueOf(rs.getString("type"))
-                            , null
                             , DataSize.of(rs.getLong("size")));
                 });
     }
@@ -135,7 +133,6 @@ public class JdbcFileRepository implements FileRepository {
                             rs.getString("name"),
                             Path.of(rs.getString("path")),
                             FileType.valueOf(rs.getString("type")),
-                            null,
                             DataSize.of(rs.getLong("size"))
                     );
                 });

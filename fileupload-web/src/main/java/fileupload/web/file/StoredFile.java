@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class StoredFile {
 
-    private UUID id;
+    private final UUID id;
 
     private String name;
 
@@ -26,15 +26,6 @@ public class StoredFile {
         this.size = size;
     }
 
-    public StoredFile(UUID id, String name, Path path, FileType type, InputStream content, DataSize size) {
-        this.id = id;
-        this.name = name;
-        this.path = path;
-        this.type = type;
-        this.content = content;
-        this.size = size;
-    }
-
     public UUID getId() {
         return id;
     }
@@ -43,8 +34,16 @@ public class StoredFile {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Path getPath() {
         return path;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 
     public FileType getType() {
@@ -55,28 +54,12 @@ public class StoredFile {
         return content;
     }
 
-    public DataSize getSize() {
-        return size;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPath(Path path) {
-        this.path = path;
-    }
-
-    public void setType(FileType type) {
-        this.type = type;
-    }
-
     public void setContent(InputStream content) {
         this.content = content;
+    }
+
+    public DataSize getSize() {
+        return size;
     }
 
     public void setSize(DataSize size) {

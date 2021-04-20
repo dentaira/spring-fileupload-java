@@ -3,12 +3,14 @@ package fileupload.web.infra.mybatis;
 import fileupload.web.file.DataSize;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedJdbcTypes;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@MappedJdbcTypes(JdbcType.BIGINT)
 public class DataSizeTypeHandler extends BaseTypeHandler<DataSize> {
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, DataSize parameter, JdbcType jdbcType) throws SQLException {

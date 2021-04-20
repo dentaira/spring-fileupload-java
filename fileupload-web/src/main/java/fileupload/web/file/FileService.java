@@ -44,7 +44,6 @@ public class FileService {
                     multipartFile.getOriginalFilename(),
                     parentPath.resolve(fileId.toString()),
                     FileType.FILE,
-                    null,
                     DataSize.of(multipartFile.getSize())
             );
 
@@ -75,7 +74,6 @@ public class FileService {
                 name,
                 parentPath.resolve(fileId.toString()),
                 FileType.DIRECTORY,
-                null,
                 DataSize.of(0L)
         );
 
