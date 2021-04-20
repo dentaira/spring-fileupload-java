@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>ホーム</h1>
+    <h1>検索</h1>
   </div>
 </template>
 
@@ -8,5 +8,8 @@
 import { defineComponent } from 'vue'
 
 export default defineComponent({
+    setup() {
+        
+    },
 })
 </script>
