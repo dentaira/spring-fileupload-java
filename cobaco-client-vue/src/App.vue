@@ -46,6 +46,7 @@ a:hover {
 </style>
 
 <script lang="ts">
+import 'normalize.css'
 import { defineComponent } from 'vue'
 import HeaderComponent from '@/components/Header.vue'
 
