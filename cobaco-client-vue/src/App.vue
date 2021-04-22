@@ -11,6 +11,9 @@ html, body {
     font-family: sans-serif;
     color: #393939;
 }
+*, *::before, *::after {
+    box-sizing: border-box;
+}
 body, div, p, h1, h2, h3, h4, ul, figure {
     margin: 0;
     padding: 0;
