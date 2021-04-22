@@ -28,6 +28,8 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.path === "/sign-in") {
+    // サインイン中にアクセスした場合はサインアウトする。
+    profileStore.profile = null;
     next();
     return;
   }
