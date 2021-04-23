@@ -1,25 +1,5 @@
 <template>
-  <section>
-    <div class="container">
-      <div class="breadcrumb">
-        <ol>
-          <li v-if="!isHome">
-            <a href="#" @click="toHome">home</a>
-          </li>
-          <template v-for="(id, index) in folder.ancestorsId" :key="index">
-            <li>
-              <a href="#" @click="updateFolder(id)">{{
-                folder.ancestorsName[index]
-              }}</a>
-            </li>
-          </template>
-          <li>
-            <span>{{ folder.name }}</span>
-          </li>
-        </ol>
-      </div>
-    </div>
-  </section>
+  <Breadcrumb :folder="folder" @folderId="updateFolder" @toHomeEvent="toHome" />
   <section>
     <div class="container">
       <main class="main">
@@ -83,7 +63,9 @@
                   </div>
                 </td>
                 <td>
-                  <span class="file-size-text" v-if="file.type === 'FILE'">{{ file.size }}</span>
+                  <span class="file-size-text" v-if="file.type === 'FILE'">{{
+                    file.size
+                  }}</span>
                 </td>
                 <td>
                   <a name="delete" href="#" data-id="storedFile.id">削除</a>
@@ -99,29 +81,6 @@
 </template>
 
 <style>
-/* パンくずリスト */
-.breadcrumb {
-  min-height: 80px;
-  margin-bottom: 20px;
-}
-.breadcrumb ol {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-.breadcrumb li {
-  font-size: 1.4rem;
-  display: inline;
-}
-.breadcrumb li::after {
-  content: "/";
-  color: #999;
-  margin: 0 7px;
-}
-.breadcrumb li:last-child::after {
-  content: none;
-}
-
 /* アクションツールバー */
 .action-toolbar button {
   margin-right: 20px;
@@ -191,6 +150,8 @@
 <script lang="ts">
 import { defineComponent, reactive, computed, toRefs } from "vue";
 import { folderStore } from "@/store/folder";
+import { Folder } from '@/store/folder.model';
+import BreadcrumbComponent from "@/components/Breadcrumb.vue";
 
 export default defineComponent({
   setup() {
@@ -199,6 +160,7 @@ export default defineComponent({
     });
 
     const updateFolder = (fileId: string) => {
+      console.log(fileId);
       state.folder = folderStore.folders.filter(
         (file) => file.fileId === fileId
       )[0];
@@ -208,16 +170,15 @@ export default defineComponent({
       state.folder = folderStore.home;
     };
 
-    const isHome = computed(() => {
-      return state.folder.fileId === folderStore.home.fileId;
-    });
-
     return {
       ...toRefs(state),
       updateFolder,
       toHome,
-      isHome,
     };
+  },
+
+  components: {
+    Breadcrumb: BreadcrumbComponent,
   },
 });
 </script>
