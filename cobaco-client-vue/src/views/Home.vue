@@ -3,14 +3,18 @@
     <div class="container">
       <div class="breadcrumb">
         <ol>
-          <li>
-            <a href="/file/home">home</a>
+          <li v-if="!isHome">
+            <a href="#" @click="toHome">home</a>
           </li>
+          <template v-for="(id, index) in folder.ancestorsId" :key="index">
+            <li>
+              <a href="#" @click="updateFolder(id)">{{
+                folder.ancestorsName[index]
+              }}</a>
+            </li>
+          </template>
           <li>
-            <a href="/file/home/folderId" text="祖先ディレクトリ"></a>
-          </li>
-          <li>
-            <span>カレントディレクトリ</span>
+            <span>{{ folder.name }}</span>
           </li>
         </ol>
       </div>
@@ -69,21 +73,20 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr v-for="file in folder.children" :key="file.name">
                 <td>
                   <div class="float-clear">
-                    <div class="file-icon" file-type="FILE"></div>
-                    <a href="/file/download/" text="ファイル名" />
+                    <div class="file-icon" v-bind:file-type="file.type" />
+                    <a href="#" @click="updateFolder(file.fileId)">{{
+                      file.name
+                    }}</a>
                   </div>
                 </td>
                 <td>
-                  <span class="file-size-text">138KB</span>
+                  <span class="file-size-text" v-if="file.type === 'FILE'">{{ file.size }}</span>
                 </td>
                 <td>
-                  <a
-                    name="delete"
-                    href="JavaScript:void(0)"
-                    data-id="storedFile.id">削除</a>
+                  <a name="delete" href="#" data-id="storedFile.id">削除</a>
                 </td>
               </tr>
             </tbody>
@@ -186,7 +189,35 @@
 </style>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, reactive, computed, toRefs } from "vue";
+import { folderStore } from "@/store/folder";
 
-export default defineComponent({});
+export default defineComponent({
+  setup() {
+    const state = reactive({
+      folder: folderStore.home,
+    });
+
+    const updateFolder = (fileId: string) => {
+      state.folder = folderStore.folders.filter(
+        (file) => file.fileId === fileId
+      )[0];
+    };
+
+    const toHome = () => {
+      state.folder = folderStore.home;
+    };
+
+    const isHome = computed(() => {
+      return state.folder.fileId === folderStore.home.fileId;
+    });
+
+    return {
+      ...toRefs(state),
+      updateFolder,
+      toHome,
+      isHome,
+    };
+  },
+});
 </script>
